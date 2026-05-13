@@ -12,10 +12,7 @@
         Status: <strong>{{ $order->status }}</strong><br>
         Metode Pembayaran: <strong>{{ strtoupper($order->payment_method) }}</strong><br>
         @if (!empty($order->table_number))
-            Meja: <strong>{{ $order->table_number }}</strong><br>
-        @endif
-        @if (!empty($order->room_number))
-            Kamar: <strong>{{ $order->room_number }}</strong><br>
+            Kamar: <strong>{{ $order->table_number }}</strong><br>
         @endif
         Waktu Pesan: <strong>{{ $order->created_at }}</strong>
     </p>
@@ -44,39 +41,34 @@
 
 @foreach ($orderItems as $item)
     @php
-        $lineTotal = ($item->price ?? 0) * ($item->quantity ?? 0);
-        $subtotal += $lineTotal; // tambahkan setiap item ke subtotal
+        $lineTotal = $item->total_price ?? 0;
+        $subtotal += $item->price ?? 0;
     @endphp
 
     <tr>
         <td>{{ $item->item->name ?? 'Item tidak ditemukan' }}</td>
         <td align="center">{{ $item->quantity ?? 0 }}</td>
         <td align="right">
-            Rp {{ number_format($lineTotal, 0, ',', '.') }}
+            Rp {{ number_format($item->price ?? 0, 0, ',', '.') }}
         </td>
     </tr>
 @endforeach
 </tbody>
 </table>
 
-@php
-    $tax = $subtotal * 0.11; // 11% pajak
-    $grandTotal = $subtotal + $tax;
-@endphp
-
 <p style="margin-top:16px; font-size:14px;">
     <strong>Subtotal:</strong>
-    Rp {{ number_format($subtotal, 0, ',', '.') }}
+    Rp {{ number_format($order->subtotal, 0, ',', '.') }}
 </p>
 
 <p style="margin-top:16px; font-size:14px;">
     <strong>Tax (11%):</strong>
-    Rp {{ number_format($tax, 0, ',', '.') }}
+    Rp {{ number_format($order->tax, 0, ',', '.') }}
 </p>
 
 <p style="margin-top:16px; font-size:14px;">
     <strong>Total:</strong>
-    Rp {{ number_format($grandTotal, 0, ',', '.') }}
+    Rp {{ number_format($order->grandtotal, 0, ',', '.') }}
 </p>
     <p style="margin-top:24px; font-size:12px; color:#666;">
         Mohon segera diproses 🙏

@@ -5,8 +5,8 @@
     <div class="page-heading">
         <div class="page-title">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Edit Role Karyawan</h3>
-                <p class="text-subtitle text-muted"> Disini adalah form untuk mengedit role karyawan</p>
+                <h3>Edit Role Tenant</h3>
+                <p class="text-subtitle text-muted">Perbarui nama role untuk menyesuaikan struktur akses tenant.</p>
             </div>
             <div class="card">
                 <div class="card-body">
@@ -19,7 +19,7 @@
                             </ul>
                         </div>
                     @endif
-                    <form class="form" action="{{ route('roles.update', $roles->id) }}" id="roleForm" method="POST"
+                    <form class="form" action="{{ route('roles.update', ['tenant' => $currentTenant->slug, 'role' => $roles->id]) }}" id="roleForm" method="POST"
                         novalidate>
                         @csrf
                         @method('PUT')
@@ -65,7 +65,7 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Apakah Anda yakin ingin menyimpan data menu ini?
+                    Apakah Anda yakin ingin menyimpan perubahan role ini?
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -89,7 +89,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
-                    <a href="{{ route('roles.index') }}" class="btn btn-danger">Ya, Batalkan</a>
+                    <a href="{{ route('roles.index', ['tenant' => $currentTenant->slug]) }}" class="btn btn-danger">Ya, Batalkan</a>
                 </div>
             </div>
         </div>

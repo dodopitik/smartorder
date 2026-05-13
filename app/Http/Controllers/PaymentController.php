@@ -8,10 +8,12 @@ class PaymentController extends Controller
 {
     public function qris()
     {
-        $year  = now()->year;
+        $tenantId = $this->requireTenant()->id;
+        $year = now()->year;
         $month = now()->month;
 
-        $monthlyOrders = Order::whereYear('created_at', $year)
+        $monthlyOrders = Order::where('tenant_id', $tenantId)
+            ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->count();
 

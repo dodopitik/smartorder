@@ -13,7 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias(([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'tenant.context' => \App\Http\Middleware\SetTenantContext::class,
         ]));
+
+        // Exclude Midtrans webhook from CSRF verification
+        $middleware->validateCsrfTokens(except: [
+            'payments/midtrans/notification',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

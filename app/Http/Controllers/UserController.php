@@ -3,131 +3,141 @@
 namespace App\Http\Controllers;
 
 use App\Models\Role;
-use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $users = User::all();
+        $users = User::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->whereHas('role', fn ($q) => $q->whereIn('role_name', ['admin', 'cashier', 'chef']))
+            ->with('role')
+            ->get();
+
         return view('admin.user.index', compact('users'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $roles = Role::orderBy('role_name', 'ASC')->get();
+        $roles = Role::query()
+            ->whereIn('role_name', ['admin', 'cashier', 'chef'])
+            ->orderBy('role_name', 'ASC')
+            ->get();
+
         return view('admin.user.create', compact('roles'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        $tenant = $this->requireTenant();
+
         $validatedData = $request->validate(
             [
-                'username'   => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('users', 'username')],
-                'fullname'   => ['required', 'string', 'max:255'],
-                'email'      => ['required', 'string', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')],
-                'phone'      => ['required', 'string', 'regex:/^\+?[\d\s\-().]{8,20}$/'],
-                'role_id'    => ['required', 'exists:roles,id'],
-                'password'   => ['required', 'string', 'min:8'], // jika ada konfirmasi: tambahkan 'confirmed'
+                'username' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('users', 'username')],
+                'fullname' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email:rfc', 'max:255', Rule::unique('users', 'email')],
+                'phone' => ['required', 'string', 'regex:/^\+?[\d\s\-().]{8,20}$/'],
+                'role_id' => ['required', Rule::exists('roles', 'id')->whereIn('role_name', ['admin', 'cashier', 'chef'])],
+                'password' => ['required', 'string', 'min:8'],
             ],
             [
                 'username.required' => 'Username wajib diisi.',
-                'username.alpha_dash' => 'Username hanya boleh huruf, angka, strip (-), dan garis bawah (_).',
-                'username.unique'   => 'Username sudah digunakan.',
+                'username.alpha_dash' => 'Username hanya boleh huruf, angka, dash, dan underscore.',
+                'username.unique' => 'Username sudah digunakan.',
                 'fullname.required' => 'Nama lengkap wajib diisi.',
-                'email.required'    => 'Email wajib diisi.',
-                'email.email'       => 'Format email tidak valid.',
-                'email.unique'      => 'Email sudah digunakan.',
-                'phone.required'    => 'Nomor HP wajib diisi.',
-                'phone.regex'       => 'Nomor HP tidak valid. Gunakan format 08… atau +62…',
-                'role_id.required'  => 'Role wajib dipilih.',
-                'role_id.exists'    => 'Role tidak valid.',
+                'email.required' => 'Email wajib diisi.',
+                'email.email' => 'Format email tidak valid. Contoh: nama@domain.com',
+                'email.unique' => 'Email sudah terdaftar.',
+                'phone.required' => 'Nomor telepon wajib diisi.',
+                'phone.regex' => 'Format nomor telepon tidak valid.',
+                'role_id.required' => 'Role wajib dipilih.',
+                'role_id.exists' => 'Role yang dipilih tidak valid.',
                 'password.required' => 'Password wajib diisi.',
-                'password.min'      => 'Password minimal 8 karakter.',
-            ],
+                'password.min' => 'Password minimal 8 karakter.',
+            ]
         );
+
         $validatedData['password'] = Hash::make($validatedData['password']);
+        $validatedData['tenant_id'] = $tenant->id;
 
-        $users = User::create($validatedData);
-        return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
+        User::create($validatedData);
+
+        return redirect()->route('users.index', ['tenant' => $tenant->slug])->with('success', 'User berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(string $tenant, string $id)
     {
-        //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(string $tenant, string $id)
     {
-        $users = User::findOrFail($id);
-        $roles = Role::orderBy('role_name', 'ASC')->get();
+        $users = User::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->findOrFail($id);
+
+        $roles = Role::query()
+            ->whereIn('role_name', ['admin', 'cashier', 'chef'])
+            ->orderBy('role_name', 'ASC')
+            ->get();
+
         return view('admin.user.edit', compact('roles', 'users'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $tenant, string $id)
     {
-        $users = User::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $users = User::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->findOrFail($id);
 
         $validatedData = $request->validate(
             [
-                'username'   => ['required', 'string', 'max:255',  'regex:/^[a-zA-Z0-9._-]+$/', Rule::unique('users', 'username')->ignore($users->id)],
-                'fullname'   => ['required', 'string', 'max:255'],
-                'email'      => ['required', 'string', 'email:rfc,dns', 'max:255', Rule::unique('users', 'email')->ignore($users->id)],
-                'phone'      => ['required', 'string', 'regex:/^\+?[\d\s\-().]{8,20}$/'],
-                'role_id'    => ['required', 'exists:roles,id'],
-
+                'username' => ['required', 'string', 'max:255', 'regex:/^[a-zA-Z0-9._-]+$/', Rule::unique('users', 'username')->ignore($users->id)],
+                'fullname' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'email:rfc', 'max:255', Rule::unique('users', 'email')->ignore($users->id)],
+                'phone' => ['required', 'string', 'regex:/^\+?[\d\s\-().]{8,20}$/'],
+                'role_id' => ['required', Rule::exists('roles', 'id')->whereIn('role_name', ['admin', 'cashier', 'chef'])],
             ],
             [
                 'username.required' => 'Username wajib diisi.',
-                'username.alpha_dash' => 'Username hanya boleh huruf, angka, strip (-), dan garis bawah (_).',
-                'email.required'    => 'Email wajib diisi.',
-                'email.email'       => 'Format email tidak valid.',
-                'email.unique'      => 'Email sudah digunakan.',
-                'phone.required'    => 'Nomor HP wajib diisi.',
-                'phone.regex'       => 'Nomor HP tidak valid. Gunakan format 08… atau +62…',
-                'role_id.required'  => 'Role wajib dipilih.',
-                'role_id.exists'    => 'Role tidak valid.',
-
-            ],
+                'username.regex' => 'Username hanya boleh huruf, angka, titik, dash, dan underscore.',
+                'username.unique' => 'Username sudah digunakan.',
+                'fullname.required' => 'Nama lengkap wajib diisi.',
+                'email.required' => 'Email wajib diisi.',
+                'email.email' => 'Format email tidak valid. Contoh: nama@domain.com',
+                'email.unique' => 'Email sudah terdaftar.',
+                'phone.required' => 'Nomor telepon wajib diisi.',
+                'phone.regex' => 'Format nomor telepon tidak valid.',
+                'role_id.required' => 'Role wajib dipilih.',
+                'role_id.exists' => 'Role yang dipilih tidak valid.',
+            ]
         );
-
 
         $users->update($validatedData);
 
-        return redirect()->route('users.index')->with('success', 'Menu berhasil diperbarui.');
+        return redirect()->route('users.index', ['tenant' => $tenantModel->slug])->with('success', 'User berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(string $tenant, string $id)
     {
-        $users = User::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $user = User::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->findOrFail($id);
 
-        // hapus data dari database
-        $users->forceDelete(); // benar-benar hilang dari DB
+        // Cek apakah user masih punya order
+        $orderCount = \App\Models\Order::where('user_id', $user->id)->count();
+        if ($orderCount > 0) {
+            return redirect()->route('users.index', ['tenant' => $tenantModel->slug])
+                ->with('error', 'User ini memiliki ' . $orderCount . ' pesanan dan tidak bisa dihapus permanen. Gunakan soft delete.');
+        }
 
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        $user->forceDelete();
+
+        return redirect()->route('users.index', ['tenant' => $tenantModel->slug])->with('success', 'User berhasil dihapus.');
     }
 }

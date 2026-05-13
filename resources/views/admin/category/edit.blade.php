@@ -1,12 +1,12 @@
 @extends('admin.layout.master')
 
-@section('title', 'Edit Menu')
+@section('title', 'Edit Kategori')
 @section('content')
     <div class="page-heading">
         <div class="page-title">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Edit Category Menu</h3>
-                <p class="text-subtitle text-muted"> Disini adalah form untuk mengedit Category Menu</p>
+                <h3>Edit Kategori Menu</h3>
+                <p class="text-subtitle text-muted">Perbarui nama dan detail kategori untuk tenant aktif.</p>
             </div>
             <div class="card">
                 <div class="card-body">
@@ -19,7 +19,7 @@
                             </ul>
                         </div>
                     @endif
-                    <form class="form" action="{{ route('categories.update', $categories->id) }}" id="categoryForm"
+                    <form class="form" action="{{ route('categories.update', ['tenant' => $currentTenant->slug, 'category' => $categories->id]) }}" id="categoryForm"
                         method="POST" novalidate>
                         @csrf
                         @method('PUT')
@@ -27,7 +27,7 @@
                             <div class="row ">
                                 <div class=" ">
                                     <div class="form-group">
-                                        <label for="category_name">Nama Category</label>
+                                        <label for="category_name">Nama Kategori</label>
                                         <input type="text"
                                             class="form-control @error('category_name') is-invalid @enderror"
                                             id="category_name" placeholder="" name="category_name" required
@@ -68,7 +68,7 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Apakah Anda yakin ingin menyimpan data menu ini?
+                    Apakah Anda yakin ingin menyimpan perubahan kategori ini?
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -92,7 +92,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
-                    <a href="{{ route('categories.index') }}" class="btn btn-danger">Ya, Batalkan</a>
+                    <a href="{{ route('categories.index', ['tenant' => $currentTenant->slug]) }}" class="btn btn-danger">Ya, Batalkan</a>
                 </div>
             </div>
         </div>

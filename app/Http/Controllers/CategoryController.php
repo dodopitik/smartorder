@@ -2,101 +2,114 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Category;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->orderBy('category_name')
+            ->get();
+
         return view('admin.category.index', compact('categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
-        $categories = Category::orderBy('category_name', 'ASC')->get();
+        $categories = Category::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->orderBy('category_name', 'ASC')
+            ->get();
+
         return view('admin.category.create', compact('categories'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
+        $tenant = $this->requireTenant();
+
         $validatedData = $request->validate(
             [
-                'category_name' => ['required', 'string', 'max:255', Rule::unique('categories', 'category_name')],
-               
-            ],
-            [
-                'category_name.unique'   => 'Nama category sudah dipakai. Gunakan nama lain.',
-                'category_name.required' => 'Nama category wajib diisi.',
-              
+                'category_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('categories', 'category_name')->where(
+                        fn ($query) => $query->where('tenant_id', $tenant->id)
+                    ),
+                ],
+                'description' => ['nullable', 'string', 'max:1000'],
             ]
         );
 
-        $categories = Category::create($validatedData);
-        return redirect()->route('categories.index')->with('success', 'role berhasil ditambahkan.');
+        $validatedData['tenant_id'] = $tenant->id;
+        $validatedData['description'] = $validatedData['description'] ?? $validatedData['category_name'];
+
+        Category::create($validatedData);
+
+        return redirect()->route('categories.index', ['tenant' => $tenant->slug])->with('success', 'Kategori berhasil ditambahkan.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(string $tenant, string $id)
     {
-        //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(string $tenant, string $id)
     {
-        $categories = Category::findOrFail($id);
+        $categories = Category::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->findOrFail($id);
+
         return view('admin.category.edit', compact('categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $tenant, string $id)
     {
-        $categories = Category::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $categories = Category::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->findOrFail($id);
 
         $validatedData = $request->validate(
             [
-                'category_name' => ['required', 'string', 'max:255'],
-            ],
-            [
-                'category_name.unique'   => 'Nama role sudah dipakai. Gunakan nama lain.',
-                'category_name.required' => 'Nama role wajib diisi.',
+                'category_name' => [
+                    'required',
+                    'string',
+                    'max:255',
+                    Rule::unique('categories', 'category_name')
+                        ->where(fn ($query) => $query->where('tenant_id', $tenantModel->id))
+                        ->ignore($categories->id),
+                ],
+                'description' => ['nullable', 'string', 'max:1000'],
             ]
         );
 
-
+        $validatedData['description'] = $validatedData['description'] ?? $categories->description ?? $validatedData['category_name'];
         $categories->update($validatedData);
 
-        return redirect()->route('categories.index')->with('success', 'Menu berhasil diperbarui.');
+        return redirect()->route('categories.index', ['tenant' => $tenantModel->slug])->with('success', 'Kategori berhasil diperbarui.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(string $tenant, string $id)
     {
-        $categories = Category::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $categories = Category::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->findOrFail($id);
 
-        // hapus data dari database
-        $categories->forceDelete(); // benar-benar hilang dari DB
+        // Cek apakah kategori masih dipakai oleh item
+        $itemCount = \App\Models\Item::where('category_id', $categories->id)->count();
+        if ($itemCount > 0) {
+            return redirect()->route('categories.index', ['tenant' => $tenantModel->slug])
+                ->with('error', 'Kategori ini masih digunakan oleh ' . $itemCount . ' menu. Pindahkan menu terlebih dahulu.');
+        }
 
-        return redirect()->route('categories.index')->with('success', 'Category berhasil dihapus.');
+        $categories->delete();
+
+        return redirect()->route('categories.index', ['tenant' => $tenantModel->slug])->with('success', 'Kategori berhasil dihapus.');
     }
 }

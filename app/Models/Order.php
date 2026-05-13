@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
@@ -10,6 +11,7 @@ class Order extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'tenant_id',
         'order_code',
         'user_id',
         'subtotal',
@@ -19,30 +21,31 @@ class Order extends Model
         'table_number',
         'notes',
         'grandtotal',
-        'created_at',
-        'updated_at',
+        'is_disbursed',
+        'disbursed_at',
     ];
+
     protected $dates = ['deleted_at'];
 
-    public function user()
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-      public function orderItems()
+    public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
     }
 
-     public function items()
+    public function items()
     {
         return $this->belongsToMany(Item::class, 'order_items')
-                    ->withPivot(['quantity','price','tax','total_price'])
-                    ->withTimestamps();
+            ->withPivot(['quantity', 'price', 'tax', 'total_price'])
+            ->withTimestamps();
     }
-
-    // public function orderItems()
-    // {
-    //     return $this->hasMany(OrderItem::class);
-    // }
 }

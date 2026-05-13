@@ -13,7 +13,11 @@ class RoleController extends Controller
      */
     public function index()
     {
-        $roles = Role::all();
+        // Hanya tampilkan role yang relevan untuk tenant (bukan super_admin & customer)
+        $roles = Role::query()
+            ->whereNotIn('role_name', ['super_admin', 'customer'])
+            ->get();
+
         return view('admin.role.index', compact('roles'));
     }
 
@@ -31,6 +35,8 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
+        $tenant = $this->requireTenant();
+
         $validatedData = $request->validate(
             [
                 'role_name' => ['required', 'string', 'max:255', Rule::unique('roles', 'role_name')],
@@ -44,13 +50,13 @@ class RoleController extends Controller
         );
 
         $roles = Role::create($validatedData);
-        return redirect()->route('roles.index')->with('success', 'role berhasil ditambahkan.');
+        return redirect()->route('roles.index', ['tenant' => $tenant->slug])->with('success', 'role berhasil ditambahkan.');
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $tenant, string $id)
     {
         //
     }
@@ -58,47 +64,71 @@ class RoleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $tenant, string $id)
     {
-        $roles = Role::findOrFail($id);
+        $roles = Role::query()
+            ->whereNotIn('role_name', ['super_admin', 'customer'])
+            ->findOrFail($id);
+
         return view('admin.role.edit', compact('roles'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $tenant, string $id)
     {
-        $roles = Role::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $roles = Role::query()
+            ->whereNotIn('role_name', ['super_admin', 'customer'])
+            ->findOrFail($id);
+
+        // Proteksi role sistem dari rename
+        $protectedRoles = ['admin', 'cashier', 'chef'];
+        if (in_array($roles->role_name, $protectedRoles, true)) {
+            return redirect()->route('roles.index', ['tenant' => $tenantModel->slug])
+                ->with('error', 'Role sistem "' . $roles->role_name . '" tidak bisa diubah namanya.');
+        }
 
         $validatedData = $request->validate(
             [
-                'role_name' => ['required', 'string', 'max:255'],
-                
+                'role_name' => ['required', 'string', 'max:255', Rule::unique('roles', 'role_name')->ignore($roles->id)],
             ],
             [
-                'role_name.unique'   => 'Nama role sudah dipakai. Gunakan nama lain.',
+                'role_name.unique' => 'Nama role sudah dipakai. Gunakan nama lain.',
                 'role_name.required' => 'Nama role wajib diisi.',
-                
             ]
         );
 
-
         $roles->update($validatedData);
 
-        return redirect()->route('roles.index')->with('success', 'Menu berhasil diperbarui.');
+        return redirect()->route('roles.index', ['tenant' => $tenantModel->slug])->with('success', 'Role berhasil diperbarui.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(string $tenant, string $id)
     {
-        $roles = Role::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $role = Role::findOrFail($id);
 
-        // hapus data dari database
-        $roles->forceDelete(); // benar-benar hilang dari DB
+        // Proteksi role sistem — tidak boleh dihapus
+        $protectedRoles = ['super_admin', 'admin', 'cashier', 'chef', 'customer'];
+        if (in_array($role->role_name, $protectedRoles, true)) {
+            return redirect()->route('roles.index', ['tenant' => $tenantModel->slug])
+                ->with('error', 'Role "' . $role->role_name . '" adalah role sistem dan tidak bisa dihapus.');
+        }
 
-        return redirect()->route('roles.index')->with('success', 'Role berhasil dihapus.');
+        // Cek apakah role masih dipakai oleh user
+        $usersCount = \App\Models\User::where('role_id', $role->id)->count();
+        if ($usersCount > 0) {
+            return redirect()->route('roles.index', ['tenant' => $tenantModel->slug])
+                ->with('error', 'Role ini masih digunakan oleh ' . $usersCount . ' user. Pindahkan user terlebih dahulu.');
+        }
+
+        $role->forceDelete();
+
+        return redirect()->route('roles.index', ['tenant' => $tenantModel->slug])->with('success', 'Role berhasil dihapus.');
     }
 }

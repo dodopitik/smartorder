@@ -20,7 +20,7 @@ Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
 
-    Route::post('login', [AuthenticatedSessionController::class, 'store']);
+    Route::post('login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 
     Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])
         ->name('password.request');
@@ -34,6 +34,20 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 });
+
+// Login routes tanpa middleware 'guest' agar bisa diakses meskipun sudah login
+// Controller akan handle logout otomatis jika perlu switch akun
+Route::get('platform/login', [AuthenticatedSessionController::class, 'createPlatform'])
+    ->name('platform.login');
+
+Route::post('platform/login', [AuthenticatedSessionController::class, 'storePlatform'])
+    ->name('platform.login.store');
+
+Route::get('hotel/{tenant:slug}/admin/login', [AuthenticatedSessionController::class, 'createTenant'])
+    ->name('tenant.auth.login');
+
+Route::post('hotel/{tenant:slug}/admin/login', [AuthenticatedSessionController::class, 'storeTenant'])
+    ->name('tenant.auth.login.store');
 
 Route::middleware('auth')->group(function () {
     Route::get('verify-email', EmailVerificationPromptController::class)

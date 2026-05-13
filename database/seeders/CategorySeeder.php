@@ -2,22 +2,27 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Tenant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $categories = [
-            ['category_name' => 'Makanan', 'description' => 'Delicious and juicy burgers made with fresh ingredients.'],
-            ['category_name' => 'Minuman', 'description' => 'Crispy fries, onion rings, and other tasty sides to complement your meal.'],
+        $baseCategories = [
+            ['category_name' => 'Makanan', 'description' => 'Menu utama untuk kebutuhan makan berat.'],
+            ['category_name' => 'Minuman', 'description' => 'Pilihan minuman dingin dan hangat.'],
+            ['category_name' => 'Snack', 'description' => 'Camilan ringan untuk menemani pesanan utama.'],
         ];
 
-        DB::table('categories')->insert($categories);
+        foreach (Tenant::all() as $tenant) {
+            foreach ($baseCategories as $category) {
+                DB::table('categories')->updateOrInsert(
+                    ['tenant_id' => $tenant->id, 'category_name' => $category['category_name']],
+                    $category + ['tenant_id' => $tenant->id]
+                );
+            }
+        }
     }
 }

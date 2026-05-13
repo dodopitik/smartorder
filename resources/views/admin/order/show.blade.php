@@ -11,14 +11,14 @@
         <div class="page-title">
             <div class="row">
                 <div class="col-12 col-md-6 order-md-1 order-last">
-                    <h3>Daftar Pesanan</h3>
-                    <p class="text-subtitle text-muted"> Disini adalah halaman daftar pesanan </p>
+                    <h3>Detail Pesanan</h3>
+                    <p class="text-subtitle text-muted">Lihat rincian transaksi, status pesanan, dan item yang dipesan customer.</p>
                 </div>
                 <div class="col-12 col-md-6 order-md-2 order-first">
                     <nav aria-label="breadcrumb" class="breadcrumb-header float-start float-lg-end">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="index.html">Daftar Pesanan</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+                            <li class="breadcrumb-item"><a href="{{ route('orders.index', ['tenant' => $currentTenant->slug]) }}">Pesanan</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Detail Pesanan</li>
                         </ol>
                     </nav>
                 </div>
@@ -32,14 +32,14 @@
                         <div class="col-md-6">
                             <p>Nama Pelanggan : {{ $orders->user->fullname }}</p>
                             <p>Total : Rp. {{ number_format($orders->grandtotal, 0, ',', '.') }}</p>
-                            <p>No.Kamar : {{ $orders->table_number }}</p>
+                            <p>No. Kamar : {{ $orders->table_number }}</p>
                             <p>Status :
                                 @if ($orders->status === 'settlement')
                                     <span class="badge bg-success">Settlement</span>
                                 @elseif ($orders->status === 'pending')
                                     <span class="badge bg-warning text-dark">Pending</span>
-                                @elseif ($orders->status === 'coocked')
-                                    <span class="badge bg-info text-dark">Coocked</span>
+                                @elseif ($orders->status === 'cooked')
+                                    <span class="badge bg-info text-dark">Cooked</span>
                                 @else
                                     <span class="badge bg-secondary">{{ ucfirst($orders->status) }}</span>
                                 @endif
@@ -48,7 +48,7 @@
                         <div class="col-md-6">
                             <p>Metode Pembayaran : {{ $orders->payment_method }}</p>
                             <p>Catatan : {{ $orders->notes }}</p>
-                            <p>dibuat pada : {{ $orders->created_at->format('d M Y H:i') }}
+                            <p>Dibuat pada : {{ $orders->created_at->format('d M Y H:i') }}
                             </p>
                         </div>
                     </div>
@@ -110,11 +110,11 @@
 
                                 <tr>
                                     <th colspan="5" class="text-end ">
-                                       <a href="{{ route('orders.print', $orders) }}" target="_blank" class="btn btn-primary mt-3">
+                                       <a href="{{ route('orders.print', ['tenant' => $currentTenant->slug, 'orderId' => $orders->id]) }}" target="_blank" class="btn btn-primary mt-3">
                                             <i class="bi bi-printer fs-5"></i> Print Struk
                                         </a>
                                          
-                                        <a href="{{ route('orders.index') }}" class="btn btn-secondary mt-3 ">
+                                        <a href="{{ route('orders.index', ['tenant' => $currentTenant->slug]) }}" class="btn btn-secondary mt-3 ">
                                             <i class="bi bi-arrow-left fs-5"></i> Kembali ke Daftar Pesanan
                                         </a>
                                         

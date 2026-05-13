@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
@@ -10,12 +11,19 @@ class Category extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'tenant_id',
         'category_name',
+        'description',
         'created_at',
         'updated_at',
-
     ];
+
     protected $dates = ['deleted_at'];
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function items()
     {

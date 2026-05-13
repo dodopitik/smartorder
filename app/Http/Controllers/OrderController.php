@@ -2,122 +2,205 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-public function index()
-{
-    $orders = Order::orderByDesc('created_at')->get(); // lebih rapi dari all()->sortByDesc()
+    public function index(Request $request)
+    {
+        $tenantId = $this->requireTenant()->id;
+        $this->syncPendingDigitalOrders($tenantId);
 
-    $lastOrder = Order::latest('id')->first();
+        $orders = Order::query()
+            ->where('tenant_id', $tenantId)
+            ->with('user')
+            ->orderByDesc('created_at')
+            ->limit(200)
+            ->get();
 
-    return view('admin.order.index', [
-        'orders'          => $orders,
-        'lastOrderId'     => $lastOrder?->id ?? 0,
-        'lastOrderStatus' => $lastOrder?->status ?? '',
-    ]);
-}
+        $lastOrder = Order::query()
+            ->where('tenant_id', $tenantId)
+            ->latest('id')
+            ->first();
 
-    /**
-     * Show the form for creating a new resource.
-     */
+        // AJAX request: return partial HTML tabel saja
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json([
+                'html' => view('admin.order._table', [
+                    'orders' => $orders,
+                    'currentTenant' => $this->requireTenant(),
+                ])->render(),
+                'lastOrderId' => $lastOrder?->id ?? 0,
+                'lastOrderStatus' => $lastOrder?->status ?? '',
+                'pendingOrders' => $orders->where('status', 'pending')->count(),
+                'settlementOrders' => $orders->where('status', 'settlement')->count(),
+                'cookedOrders' => $orders->where('status', 'cooked')->count(),
+                'totalOrders' => $orders->count(),
+                'grossRevenue' => (int) $orders->sum('grandtotal'),
+            ]);
+        }
+
+        return view('admin.order.index', [
+            'orders' => $orders,
+            'lastOrderId' => $lastOrder?->id ?? 0,
+            'lastOrderStatus' => $lastOrder?->status ?? '',
+        ]);
+    }
+
     public function create()
     {
-        //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(string $tenant, string $orderId)
     {
-        $orders = Order::findOrFail($id);
+        $orders = Order::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->findOrFail($orderId);
+
+        $orders = $this->syncMidtransOrderStatus($orders);
+
         $orderItems = OrderItem::where('order_id', $orders->id)->get();
         return view('admin.order.show', compact('orders', 'orderItems'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(string $tenant, string $orderId)
     {
-        //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $tenant, string $orderId)
     {
-        //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(string $tenant, string $orderId)
     {
-        //
     }
 
-    public function settlement($id)
+    public function settlement(Request $request, string $tenant, string $orderId)
     {
-        $order = Order::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $order = Order::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->findOrFail($orderId);
+
         $order->status = 'settlement';
         $order->save();
 
-        return redirect()->route('orders.index')->with('success', 'Order telah diselesaikan.');
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Order telah diselesaikan.']);
+        }
+
+        return redirect()->route('orders.index', ['tenant' => $tenantModel->slug])->with('success', 'Order telah diselesaikan.');
     }
 
-    public function cooked($id)
+    public function cooked(Request $request, string $tenant, string $orderId)
     {
-        $order = Order::findOrFail($id);
+        $tenantModel = $this->requireTenant();
+        $order = Order::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->findOrFail($orderId);
+
         $order->status = 'cooked';
         $order->save();
 
-        return redirect()->route('orders.index')->with('success', 'Order telah diselesaikan.');
+        if ($request->ajax() || $request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Order telah diselesaikan.']);
+        }
+
+        return redirect()->route('orders.index', ['tenant' => $tenantModel->slug])->with('success', 'Order telah diselesaikan.');
     }
 
- public function print(Order $order)
-{
-    $order->load(['user', 'orderItems.item']); // eager load YANG BENAR
+    public function print(string $tenant, string $orderId)
+    {
+        $order = Order::query()
+            ->where('tenant_id', $this->requireTenant()->id)
+            ->findOrFail($orderId);
 
-    return view('admin.order.print', [
-        'order' => $order,
-        'orderItems' => $order->orderItems, // benar
-    ]);
-}
+        $order->load(['user', 'orderItems.item']);
 
-public function checkNew(Request $request)
-{
-    $lastId     = (int) $request->query('last_id', 0);
-    $lastStatus = (string) $request->query('last_status', '');
+        return view('admin.order.print', [
+            'order' => $order,
+            'orderItems' => $order->orderItems,
+        ]);
+    }
 
-    $latestOrder = Order::latest('id')->first();
+    public function checkNew(Request $request)
+    {
+        $tenant = $this->currentTenant();
 
-    $latestId     = $latestOrder?->id ?? 0;
-    $latestStatus = $latestOrder?->status ?? '';
+        if (! $tenant) {
+            return response()->json(['has_new' => false, 'status_changed' => false, 'latest_id' => 0, 'latest_status' => '']);
+        }
 
-    return response()->json([
-        'has_new'        => $latestId > $lastId,
-        'status_changed' => $latestStatus !== '' && $lastStatus !== '' && $latestStatus !== $lastStatus,
-        'latest_id'      => $latestId,
-        'latest_status'  => $latestStatus,
-    ]);
-}
+        $lastId = (int) $request->query('last_id', 0);
+        $lastStatus = (string) $request->query('last_status', '');
 
+        $latestOrder = Order::query()
+            ->where('tenant_id', $tenant->id)
+            ->latest('id')
+            ->first();
+
+        $latestId = $latestOrder?->id ?? 0;
+        $latestStatus = $latestOrder?->status ?? '';
+
+        return response()->json([
+            'has_new' => $lastId > 0 && $latestId > $lastId,
+            'status_changed' => $latestStatus !== '' && $lastStatus !== '' && $latestStatus !== $lastStatus,
+            'latest_id' => $latestId,
+            'latest_status' => $latestStatus,
+        ]);
+    }
+
+    private function syncPendingDigitalOrders(int $tenantId): void
+    {
+        Order::query()
+            ->where('tenant_id', $tenantId)
+            ->where('payment_method', 'qris')
+            ->where('status', 'pending')
+            ->orderByDesc('id')
+            ->limit(5)
+            ->get()
+            ->each(function (Order $order) {
+                $this->syncMidtransOrderStatus($order);
+            });
+    }
+
+    private function syncMidtransOrderStatus(Order $order): Order
+    {
+        if ($order->payment_method !== 'qris' || in_array($order->status, ['settlement', 'cooked'], true)) {
+            return $order;
+        }
+
+        try {
+            \Midtrans\Config::$serverKey = config('midtrans.server_key');
+            \Midtrans\Config::$isProduction = config('midtrans.is_production');
+            \Midtrans\Config::$isSanitized = true;
+            \Midtrans\Config::$is3ds = true;
+
+            $transaction = \Midtrans\Transaction::status($order->order_code);
+            $transactionStatus = (string) ($transaction->transaction_status ?? '');
+            $fraudStatus = (string) ($transaction->fraud_status ?? '');
+
+            if (
+                $transactionStatus === 'settlement'
+                || ($transactionStatus === 'capture' && ($fraudStatus === '' || $fraudStatus === 'accept'))
+            ) {
+                $order->status = 'settlement';
+                $order->save();
+            }
+        } catch (\Throwable $throwable) {
+            Log::info('Midtrans status sync skipped on order admin panel.', [
+                'order_code' => $order->order_code,
+                'message' => $throwable->getMessage(),
+            ]);
+        }
+
+        return $order->fresh() ?? $order;
+    }
 }

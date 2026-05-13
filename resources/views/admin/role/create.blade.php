@@ -1,12 +1,12 @@
 @extends('admin.layout.master')
 
-@section('title', 'Tambah Menu')
+@section('title', 'Tambah Role')
 @section('content')
     <div class="page-heading">
         <div class="page-title">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Tambah Role Karyawan</h3>
-                <p class="text-subtitle text-muted"> Disini adalah form untuk menambah role karyawan</p>
+                <h3>Tambah Role Tenant</h3>
+                <p class="text-subtitle text-muted">Tambahkan role baru bila tenant membutuhkan pembagian akses tambahan.</p>
             </div>
             <div class="card">
                 <div class="card-body">
@@ -19,7 +19,7 @@
                             </ul>
                         </div>
                     @endif
-                    <form class="form" action="{{ route('roles.store') }}" id="roleForm" method="POST" novalidate>
+                    <form class="form" action="{{ route('roles.store', ['tenant' => $currentTenant->slug]) }}" id="roleForm" method="POST" novalidate>
                         @csrf
                         <div class="form-body">
                             <div class="row ">
@@ -63,7 +63,7 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Apakah Anda yakin ingin menyimpan data menu ini?
+                    Apakah Anda yakin ingin menyimpan role ini?
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -87,7 +87,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
-                    <a href="{{ route('roles.index') }}" class="btn btn-danger">Ya, Batalkan</a>
+                    <a href="{{ route('roles.index', ['tenant' => $currentTenant->slug]) }}" class="btn btn-danger">Ya, Batalkan</a>
                 </div>
             </div>
         </div>

@@ -1,129 +1,243 @@
-   <div id="sidebar">
-       <div class="sidebar-wrapper active">
-           <div class="sidebar-header position-relative">
-               <div class="d-flex justify-content-between align-items-center">
-                   <div class="logo">
-                       <a href="/dashboard">
-                           Archana Order </a>
-                   </div>
-                   <div class="theme-toggle d-flex gap-2  align-items-center mt-2">
-                       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                           aria-hidden="true" role="img" class="iconify iconify--system-uicons" width="20"
-                           height="20" preserveAspectRatio="xMidYMid meet" viewBox="0 0 21 21">
-                           <g fill="none" fill-rule="evenodd" stroke="currentColor" stroke-linecap="round"
-                               stroke-linejoin="round">
-                               <path
-                                   d="M10.5 14.5c2.219 0 4-1.763 4-3.982a4.003 4.003 0 0 0-4-4.018c-2.219 0-4 1.781-4 4c0 2.219 1.781 4 4 4zM4.136 4.136L5.55 5.55m9.9 9.9l1.414 1.414M1.5 10.5h2m14 0h2M4.135 16.863L5.55 15.45m9.899-9.9l1.414-1.415M10.5 19.5v-2m0-14v-2"
-                                   opacity=".3"></path>
-                               <g transform="translate(-210 -1)">
-                                   <path d="M220.5 2.5v2m6.5.5l-1.5 1.5"></path>
-                                   <circle cx="220.5" cy="11.5" r="4"></circle>
-                                   <path d="m214 5l1.5 1.5m5 14v-2m6.5-.5l-1.5-1.5M214 18l1.5-1.5m-4-5h2m14 0h2"></path>
-                               </g>
-                           </g>
-                       </svg>
-                       <div class="form-check form-switch fs-6">
-                           <input class="form-check-input  me-0" type="checkbox" id="toggle-dark"
-                               style="cursor: pointer">
-                           <label class="form-check-label"></label>
-                       </div>
-                       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                           aria-hidden="true" role="img" class="iconify iconify--mdi" width="20" height="20"
-                           preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24">
-                           <path fill="currentColor"
-                               d="m17.75 4.09l-2.53 1.94l.91 3.06l-2.63-1.81l-2.63 1.81l.91-3.06l-2.53-1.94L12.44 4l1.06-3l1.06 3l3.19.09m3.5 6.91l-1.64 1.25l.59 1.98l-1.7-1.17l-1.7 1.17l.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95l2.06.05m-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85c-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14c.4-.4.82-.76 1.27-1.08c.75-.53 1.93.36 1.85 1.19c-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82c-2.81 3.14-2.7 7.96.31 10.98c3.02 3.01 7.84 3.12 10.98.31Z">
-                           </path>
-                       </svg>
-                   </div>
-                   <div class="sidebar-toggler  x">
-                       <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
-                   </div>
-               </div>
-           </div>
-           <div class="sidebar-menu">
-               <ul class="menu">
-                   <li class="sidebar-item {{ request()->routeIs('dashboard') ? 'active' : '' }}"> <a
-                           href="{{ route('dashboard') }}" class='sidebar-link'>
-                           <i class="bi bi-grid-fill"></i>
-                           <span>Dashboard</span>
-                       </a>
-                   </li>
+@php
+    $user = Auth::user();
+    $role = $user->role->role_name;
+    $isSuperAdmin = $role === 'super_admin';
+    $tenantName = $currentTenant?->name ?? 'Tenant Workspace';
+@endphp
 
-                   <li class="sidebar-item  {{ request()->routeIs('orders.*') ? 'active' : '' }}">
-                       <a href="{{ route('orders.index') }}" class='sidebar-link'>
-                           <i class="bi bi-cart-fill"></i>
-                           <span>Kelola Pesanan</span>
-                       </a>
-                   </li>
-                   @if (Auth::user()->role->role_name === 'admin' || Auth::user()->role->role_name === 'cashier')
-                       <li class="sidebar-item  {{ request()->routeIs('categories.*') ? 'active' : '' }}">
-                           <a href="{{ route('categories.index') }}" class='sidebar-link'>
-                               <i class="bi bi-person-fill"></i>
-                               <span>Manajemen Category</span>
-                           </a>
-                       </li>
+<div id="sidebar">
+    <div class="sidebar-wrapper active">
+        <div class="sidebar-header position-relative">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="logo">
+                    <a href="{{ $isSuperAdmin ? route('platform.dashboard') : route('tenant-admin.panel', ['tenant' => $currentTenant->slug]) }}">
+                        <div class="sidebar-brand-card">
+                            <div class="sidebar-brand-shell">
+                                <span class="sidebar-brand-title">{{ $isSuperAdmin ? 'Platform Console' : ($currentTenant?->name ?? 'Tenant Dashboard') }}</span>
+                                <span class="sidebar-brand-subtitle">{{ $isSuperAdmin ? 'Super Admin App' : ($currentTenant?->tagline ?? 'Admin Tenant') }}</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="sidebar-toggler  x">
+                    <a href="#" class="sidebar-hide d-xl-none d-block"><i class="bi bi-x bi-middle"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="sidebar-menu">
+            <ul class="menu">
+                @if ($isSuperAdmin)
+                    <li class="sidebar-section-label">Platform Core</li>
+                    <li class="sidebar-item {{ request()->routeIs('platform.dashboard') ? 'active' : '' }}">
+                        <a href="{{ route('platform.dashboard') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-grid-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Dashboard Platform</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="sidebar-section-label">Operasional</li>
+                    <li class="sidebar-item {{ request()->routeIs('platform.tenants.*') ? 'active' : '' }}">
+                        <a href="{{ route('platform.tenants.index') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-buildings-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Kelola Tenant</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('platform.owners.*') ? 'active' : '' }}">
+                        <a href="{{ route('platform.owners.index') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-person-badge-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Owner Tenant</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('platform.billing.*') ? 'active' : '' }}">
+                        <a href="{{ route('platform.billing.index') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-receipt-cutoff"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Billing</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('platform.disbursement.*') ? 'active' : '' }}">
+                        <a href="{{ route('platform.disbursement.index') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-cash-stack"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Penyetoran QRIS</span>
+                            </span>
+                        </a>
+                    </li>
+                   
+                    <li class="sidebar-item {{ request()->routeIs('platform.reports.*') ? 'active' : '' }}">
+                        <a href="{{ route('platform.reports.index') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Laporan</span>
+                            </span>
+                        </a>
+                    </li>
+                     <li class="sidebar-section-label">Konfigurasi</li>
+                    <li class="sidebar-item {{ request()->routeIs('platform.settings.*') ? 'active' : '' }}">
+                        <a href="{{ route('platform.settings.edit') }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-sliders"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Global Setting</span>
+                            </span>
+                        </a>
+                    </li>
+                @else
+                    <li class="sidebar-section-label">Workspace</li>
+                    <li class="sidebar-item {{ request()->routeIs('tenant-admin.panel') ? 'active' : '' }}">
+                        <a href="{{ route('tenant-admin.panel', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-house-door-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Admin Panel</span>
+                            </span>
+                        </a>
+                    </li>
 
-                       <li class="sidebar-item  {{ request()->routeIs('items.*') ? 'active' : '' }}">
-                           <a href="{{ route('items.index') }}" class='sidebar-link'>
-                               <i class="bi bi-card-list"></i>
-                               <span>Daftar Menu</span>
-                           </a>
-                       </li>
-                   @endif
+                    <li class="sidebar-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                        <a href="{{ route('dashboard', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-grid-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Dashboard Tenant</span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                        <a href="{{ route('reports.index', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-journal-richtext"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Laporan</span>
+                            </span>
+                        </a>
+                    </li>
 
-                   @if (Auth::user()->role->role_name === 'admin')
-                       <li class="sidebar-item  {{ request()->routeIs('roles.*') ? 'active' : '' }}">
-                           <a href="{{ route('roles.index') }}" class='sidebar-link'>
-                               <i class="bi bi-person-fill"></i>
-                               <span>Manajemen Role</span>
-                           </a>
-                       </li>
-                       <li class="sidebar-item  {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                           <a href="{{ route('users.index') }}" class='sidebar-link'>
-                               <i class="bi bi-person-fill"></i>
-                               <span>Manajemen Karyawan</span>
-                           </a>
-                       </li>
-                   @endif
+                    <li class="sidebar-section-label">Operasional</li>
+                    <li class="sidebar-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
+                        <a href="{{ route('orders.index', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                            <span class="sidebar-link-icon"><i class="bi bi-cart-fill"></i></span>
+                            <span class="sidebar-link-copy">
+                                <span class="sidebar-link-title">Kelola Pesanan</span>
+                            </span>
+                        </a>
+                    </li>
 
+                    @if ($role === 'admin' || $role === 'cashier')
+                        <li class="sidebar-section-label">Katalog Menu</li>
+                        <li class="sidebar-item {{ request()->routeIs('categories.*') ? 'active' : '' }}">
+                            <a href="{{ route('categories.index', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                                <span class="sidebar-link-icon"><i class="bi bi-tags-fill"></i></span>
+                                <span class="sidebar-link-copy">
+                                    <span class="sidebar-link-title">Manajemen Kategori</span>
+                                </span>
+                            </a>
+                        </li>
 
-                   <li class="sidebar-item">
-                       <!-- Tombol untuk memunculkan modal -->
-                       <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#logoutModal">
-                           <i class="bi bi-box-arrow-right"></i>
-                           <span>Logout</span>
-                       </a>
-                   </li>
+                        <li class="sidebar-item {{ request()->routeIs('items.*') ? 'active' : '' }}">
+                            <a href="{{ route('items.index', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                                <span class="sidebar-link-icon"><i class="bi bi-card-list"></i></span>
+                                <span class="sidebar-link-copy">
+                                    <span class="sidebar-link-title">Daftar Menu</span>
+                                </span>
+                            </a>
+                        </li>
+                    @endif
 
-               </ul>
-           </div>
+                    @if ($role === 'admin')
+                        <li class="sidebar-section-label">Tim & Akses</li>
+                        <li class="sidebar-item {{ request()->routeIs('roles.*') ? 'active' : '' }}">
+                            <a href="{{ route('roles.index', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                                <span class="sidebar-link-icon"><i class="bi bi-shield-lock-fill"></i></span>
+                                <span class="sidebar-link-copy">
+                                    <span class="sidebar-link-title">Manajemen Role</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li class="sidebar-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                            <a href="{{ route('users.index', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                                <span class="sidebar-link-icon"><i class="bi bi-people-fill"></i></span>
+                                <span class="sidebar-link-copy">
+                                    <span class="sidebar-link-title">Manajemen Karyawan</span>
+                                </span>
+                            </a>
+                        </li>
 
-       </div>
-   </div>
+                        <li class="sidebar-section-label">Konfigurasi</li>
+                        <li class="sidebar-item {{ request()->routeIs('notification.*') ? 'active' : '' }}">
+                            <a href="{{ route('notification.settings', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link'>
+                                <span class="sidebar-link-icon"><i class="bi bi-bell-fill"></i></span>
+                                <span class="sidebar-link-copy">
+                                    <span class="sidebar-link-title">Notifikasi</span>
+                                </span>
+                            </a>
+                        </li>
+                    @endif
 
-   <!-- Modal Konfirmasi Logout -->
-   <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-       <div class="modal-dialog modal-dialog-centered">
-           <div class="modal-content border-0 rounded-3 shadow">
-               <div class="modal-header bg-danger text-white rounded-top">
-                   <h5 class="modal-title" id="logoutModalLabel">
-                       <i class="bi bi-box-arrow-right me-1"></i> Konfirmasi Logout
-                   </h5>
-                   <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                       aria-label="Close"></button>
-               </div>
+                    @if ($currentTenant)
+                        <li class="sidebar-section-label">Akses Cepat</li>
+                        <li class="sidebar-item">
+                            <a href="{{ route('tenant.menu', ['tenant' => $currentTenant->slug]) }}" class='sidebar-link' target="_blank">
+                                <span class="sidebar-link-icon"><i class="bi bi-box-arrow-up-right"></i></span>
+                                <span class="sidebar-link-copy">
+                                    <span class="sidebar-link-title">Lihat Menu Tenant</span>
+                                </span>
+                            </a>
+                        </li>
+                    @endif
+                @endif
 
-               <div class="modal-body text-center">
-                   <p class="mb-0">Apakah kamu yakin ingin keluar dari sistem?</p>
-               </div>
+                <li class="sidebar-section-label">Sesi</li>
+                <li class="sidebar-item">
+                    <a href="#" class="sidebar-link" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <span class="sidebar-link-icon"><i class="bi bi-box-arrow-right"></i></span>
+                        <span class="sidebar-link-copy">
+                            <span class="sidebar-link-title">Logout</span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="sidebar-footer-card">
+            <div class="sidebar-footer-eyebrow">{{ $isSuperAdmin ? 'Platform Snapshot' : 'Tenant Snapshot' }}</div>
+            <p class="sidebar-footer-title">{{ $isSuperAdmin ? 'Semua tenant dalam satu panel.' : $tenantName }}</p>
+            <p class="sidebar-footer-copy">
+                {{ $isSuperAdmin ? 'Fokuskan navigasi ke tenant, billing, dan setting agar operasional platform lebih cepat.' : 'Sidebar ini dirapikan supaya alur kerja admin hotel lebih cepat dibaca dan lebih tenang dipakai.' }}
+            </p>
+            <span class="sidebar-footer-meta">
+                <i class="bi {{ $isSuperAdmin ? 'bi-command' : 'bi-stars' }}"></i>
+                {{ $isSuperAdmin ? 'Super admin workspace' : 'Tenant admin workspace' }}
+            </span>
+        </div>
+    </div>
+</div>
 
-               <div class="modal-footer">
-                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                   <form id="logoutForm" method="POST" action="{{ route('logout') }}">
-                       @csrf
-                       <button type="submit" class="btn btn-danger">Ya, Logout</button>
-                   </form>
-               </div>
-           </div>
-       </div>
-   </div>
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-3 shadow">
+            <div class="modal-header bg-danger text-white rounded-top">
+                <h5 class="modal-title" id="logoutModalLabel">
+                    <i class="bi bi-box-arrow-right me-1"></i> Konfirmasi Logout
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body text-center">
+                <p class="mb-0">Apakah kamu yakin ingin keluar dari sistem?</p>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form id="logoutForm" method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    @if (! $isSuperAdmin && $currentTenant)
+                        <input type="hidden" name="redirect_to" value="{{ route('tenant.menu', ['tenant' => $currentTenant->slug], false) }}">
+                    @endif
+                    <button type="submit" class="btn btn-danger">Ya, Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

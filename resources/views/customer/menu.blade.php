@@ -1,127 +1,150 @@
 @extends('customer.layout.master')
 
 @section('content')
-    <div class="container-fluid fruite py-5">
-        <!-- Single Page Header start -->
-        <div class="container-fluid page-header py-5">
-            <h1 class="text-center text-white display-6">Menu Kami</h1>
-            <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item active text-light">Silakan pilih menu favorit anda</li>
-            </ol>
-        </div>
-        <!-- Single Page Header End -->
-        <div class="container py-5">
-            <div class="row g-4">
-                <div class="col-lg-12">
-                    <div class="row g-4">
-                        <div class="col-lg">
-                            <div class="row g-4 justify-content-center ">
-                                <div class="mb-4 py-2 overflow-auto" id="categoryFilters">
-                                    <div class="d-flex flex-nowrap gap-2">
-                                        <span
-                                            class="badge bg-primary border border-dark text-white px-3 py-2 filter-btn active cursor-pointer"
-                                            data-category="all">
-                                            Semua
-                                        </span>
-                                        <span
-                                            class="badge bg-kuning border border-dark text-white px-3 py-2 filter-btn cursor-pointer"
-                                            data-category="Makanan">
-                                            Makanan
-                                        </span>
-                                        <span
-                                            class="badge bg-happy border border-dark text-white px-3 py-2 filter-btn cursor-pointer"
-                                            data-category="Minuman">
-                                            Minuman
-                                        </span>
-                                        <span
-                                            class="badge bg-orange border border-dark text-white px-3 py-2 filter-btn cursor-pointer"
-                                            data-category="Snack">
-                                            Snack
-                                        </span>
-                                    </div>
-                                </div>
-                                @foreach ($items as $item)
-                                    <div class="col-6 col-md-6 col-lg-6 col-xl-4 menu-card mb-4"
-                                        data-category="{{ $item->category->category_name }}">
-
-                                        {{-- CARD UTAMA FLEX COLUMN & FULL HEIGHT --}}
-                                        <div
-                                            class="rounded position-relative fruite-item border border-happy border-top-0 rounded-bottom h-100 d-flex flex-column">
-
-                                            {{-- GAMBAR (TIDAK BOLEH MENGECIL) --}}
-                                            <div class="fruite-img flex-shrink-0">
-                                                <img src="{{ asset('img_item_upload/' . $item->image) }}"
-                                                    class="img-fluid w-100 rounded-top" alt="{{ $item->name }}"
-                                                    onerror="this.onerror=null;this.src='{{ asset('images/default.png') }}';">
-                                            </div>
-
-                                            {{-- LABEL KATEGORI --}}
-                                            <div class="text-white px-3 py-1 rounded position-absolute 
-                @if ($item->category->category_name == 'Makanan') bg-warning
-                @elseif ($item->category->category_name == 'Minuman') bg-happy
-                @elseif ($item->category->category_name == 'Snack') bg-orange
-                @else bg-green @endif"
-                                                style="top: 10px; left: 10px;">
-                                                {{ $item->category->category_name }}
-                                            </div>
-
-                                            {{-- KONTEN BAWAH FLEX COLUMN + GROW --}}
-                                            <div class="p-4 d-flex flex-column flex-grow-1">
-                                                <h4>{{ $item->name }}</h4>
-                                                <p class="text-dark fs-5 fw-bold mb-3">
-                                                    {{ 'Rp' . number_format($item->price, 0, ',', '.') }}
-                                                </p>
-
-                                                {{-- TOMBOL DITORONG KE PALING BAWAH --}}
-                                                <a href="#"
-                                                    onclick="event.preventDefault(); addToCart({{ $item->id }})"
-                                                    class="btn border border-secondary rounded-pill px-3 py-2 text-happy w-100 d-flex justify-content-center align-items-center mt-auto">
-                                                    <i class="fa fa-shopping-bag me-2 text-happy"></i>
-                                                    Add
-                                                </a>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                @endforeach
-
-
-
+    <section class="tenant-hero">
+        <div class="container">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-7">
+                    <span class="tenant-pill">
+                        <i class="fa fa-store"></i>
+                        {{ $currentTenant?->tagline ?? 'Tenant aktif' }}
+                    </span>
+                    <h1 class="fw-bold mt-3 mb-3 tenant-hero-title">{{ $currentTenant?->hero_title ?? 'Menu outlet siap dipesan.' }}
+                    </h1>
+                    <p class="fs-5 mb-4 tenant-hero-copy">
+                        {{ $currentTenant?->hero_subtitle ?? 'Scan QR di kamar untuk mulai pesan, lalu order akan tercatat ke tenant hotel ini.' }}
+                    </p>
+                    <div class="tenant-hero-actions">
+                        <a href="{{ route('tenant.cart', ['tenant' => $currentTenant->slug]) }}" class="btn btn-light rounded-pill px-4 py-3 fw-semibold tenant-hero-btn">Lihat
+                            Keranjang</a>
+                        <span class="tenant-pill tenant-hero-btn">
+                            <i class="fa fa-bed"></i>
+                            Kamar {{ $roomNumber ?? 'belum terdeteksi' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="tenant-card tenant-summary-card">
+                        <div class="small text-uppercase text-muted fw-bold mb-2">Ringkas</div>
+                        <div class="tenant-summary-grid">
+                            <div class="tenant-summary-item">
+                                <div class="label">Menu Aktif</div>
+                                <div class="value">{{ $items->count() }}</div>
+                            </div>
+                            <div class="tenant-summary-item">
+                                <div class="label">Nomor Kamar</div>
+                                <div class="value">{{ $roomNumber ?? '-' }}</div>
                             </div>
                         </div>
+                        <p class="tenant-summary-copy">Nomor kamar akan disimpan selama sesi pemesanan agar tim hotel tahu
+                            pesanan ini datang dari kamar mana.</p>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
+
+    <section class="container py-5">
+        @if (session('error'))
+            <div class="alert alert-danger rounded-4 border-0 shadow-sm mb-4">{{ session('error') }}</div>
+        @endif
+
+        @if (!$roomNumber)
+            <div class="tenant-card p-4 p-lg-5 mb-4">
+                <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+                    <div>
+                        <div class="small text-uppercase text-muted fw-bold mb-2">QR Kamar Belum Terdeteksi</div>
+                        <h3 class="mb-2">Silakan scan QR dari kamar hotel terlebih dahulu.</h3>
+                        <p class="text-muted mb-0">Contoh akses: <code>{{ route('tenant.menu', ['tenant' => $currentTenant->slug]) }}?kamar=101</code>. Setelah
+                            kamar terbaca, data ini akan ikut sampai checkout.</p>
+                    </div>
+                    <a href="{{ route('tenant.auth.login', ['tenant' => $currentTenant->slug]) }}" class="btn btn-outline-dark rounded-pill px-4 py-3">Masuk
+                        Admin Hotel</a>
+                </div>
+            </div>
+        @endif
+
+        <div class="tenant-card p-3 p-lg-4 mb-4">
+            <div class="d-flex flex-wrap gap-2" id="categoryFilters">
+                <button class="btn btn-primary rounded-pill filter-btn active" data-category="all">Semua</button>
+                @foreach ($items->pluck('category.category_name')->filter()->unique() as $category)
+                    <button class="btn btn-light rounded-pill filter-btn"
+                        data-category="{{ $category }}">{{ $category }}</button>
+                @endforeach
+            </div>
+        </div>
+
+        <div class="row menu-grid">
+            @forelse ($items as $item)
+                <div class="col-6 col-xl-4 menu-card mb-2 mb-lg-3"
+                    data-category="{{ $item->category?->category_name }}">
+                    @php
+                        $imagePath = $item->image;
+                        $imageSrc = \Illuminate\Support\Str::startsWith($imagePath, ['http://', 'https://'])
+                            ? $imagePath
+                            : asset('img_item_upload/' . ltrim((string) $imagePath, '/'));
+                    @endphp
+                    <article class="tenant-card menu-entry">
+                        <div class="menu-entry-media">
+                            <img src="{{ $imageSrc }}" alt="{{ $item->name }}"
+                                onerror="this.onerror=null;this.src='{{ asset('assets/logo/archana1.png') }}';">
+                            <span class="badge rounded-pill position-absolute top-0 start-0 m-3 px-3 py-2 menu-category-badge">
+                                {{ $item->category?->category_name ?? 'Menu' }}
+                            </span>
+                        </div>
+                        <div class="p-4 d-flex flex-column menu-entry-body">
+                            <h4 class="mb-2 menu-entry-title">{{ $item->name }}</h4>
+                            @php
+                                $menuDescription = trim((string) $item->description);
+                                $fallbackDescription = $item->category?->category_name
+                                    ? 'Pilihan ' . strtolower($item->category->category_name) . ' favorit yang cocok untuk dinikmati di kamar.'
+                                    : 'Menu favorit yang disiapkan hangat untuk pesanan Anda.';
+                            @endphp
+                            <p class="text-muted flex-grow-1 mb-4 menu-entry-desc">
+                                {{ $menuDescription !== '' ? $menuDescription : $fallbackDescription }}</p>
+                            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                                <span class="menu-entry-price">Rp{{ number_format($item->price, 0, ',', '.') }}</span>
+                                <button type="button" onclick="addToCart({{ $item->id }})"
+                                    class="btn btn-primary rounded-pill fw-semibold menu-add-btn">
+                                    <i class="fa fa-plus me-2"></i>Tambah
+                                </button>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            @empty
+                <div class="col-12">
+                    <div class="tenant-card p-5 text-center">
+                        <h3 class="mb-2">Menu tenant belum tersedia</h3>
+                        <p class="text-muted mb-0">Tambahkan item untuk tenant ini dari dashboard admin.</p>
+                    </div>
+                </div>
+            @endforelse
+        </div>
+
         @php
-            $cart = session('cart', []);
+            $cart = session('cart.tenant.' . ($currentTenant?->id ?? 'x'), []);
             $count = $cart ? array_sum(array_column($cart, 'qty')) : 0;
         @endphp
 
         <div id="stickyCartBar" class="sticky-cart-bar" style="{{ $count > 0 ? '' : 'display:none;' }}">
             <div class="sticky-cart-inner">
-                <div class="sticky-cart-info">
-                    <i class="fa fa-shopping-cart text-happy" style="font-size: 2rem;"></i>
+                <div class="d-flex align-items-center gap-3">
+                    <i class="fa fa-shopping-cart text-happy" style="font-size: 1.8rem;"></i>
                     <div>
-                        <div>Barang di keranjang</div>
-                        <div class="sticky-cart-count">
-                            <span id="stickyCartCount">{{ $count }}</span> item
-                        </div>
+                        <div class="fw-semibold">Keranjang tenant ini</div>
+                        <div class="small text-white-50"><span id="stickyCartCount">{{ $count }}</span> item siap
+                            checkout</div>
                     </div>
                 </div>
-
-                <a href="{{ route('cart') }}" class="sticky-cart-btn">
-                    Checkout
-                </a>
+                <a href="{{ route('tenant.cart', ['tenant' => $currentTenant->slug]) }}" class="sticky-cart-btn">Lanjut ke Keranjang</a>
             </div>
         </div>
-
-    </div>
+    </section>
 @endsection
 
 @section('scripts')
     <script>
-        // Mixin toast biar konsisten
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -131,7 +154,7 @@
         });
 
         function addToCart(menuId) {
-            fetch("/cart/add", {
+            fetch("{{ route('tenant.cart.add', ['tenant' => $currentTenant->slug]) }}", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -146,7 +169,6 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        // contoh: 404 Menu tidak ditemukan
                         Toast.fire({
                             icon: 'error',
                             title: data.success || 'Gagal menambahkan.'
@@ -154,128 +176,48 @@
                         return;
                     }
 
-                    // hitung total qty dari cart (server kirim data.cart)
                     const cart = data.cart || {};
-                    const count = Object.values(cart).reduce(
-                        (sum, item) => sum + (item.qty || 0),
-                        0
-                    );
-
-                    // 🔹 update badge di icon cart atas
-                    const badge = document.getElementById("cartBadge");
-                    if (badge) {
-                        badge.textContent = count;
-                        badge.style.display = count > 0 ? "inline-block" : "none";
-                        badge.animate(
-                            [{
-                                    transform: 'scale(1)'
-                                },
-                                {
-                                    transform: 'scale(1.15)'
-                                },
-                                {
-                                    transform: 'scale(1)'
-                                }
-                            ], {
-                                duration: 200,
-                                easing: 'ease-out'
-                            }
-                        );
-                    }
-
-                    // 🔹 update sticky checkout bar bawah (REALTIME)
+                    const count = Object.values(cart).reduce((sum, item) => sum + (item.qty || 0), 0);
                     const stickyBar = document.getElementById("stickyCartBar");
                     const stickyCount = document.getElementById("stickyCartCount");
 
                     if (stickyBar && stickyCount) {
                         stickyCount.textContent = count;
-
-                        if (count > 0) {
-                            // kalau awalnya hidden, tampilkan
-                            stickyBar.style.display = "block";
-                            stickyBar.animate(
-                                [{
-                                        transform: 'translateY(100%)',
-                                        opacity: 0
-                                    },
-                                    {
-                                        transform: 'translateY(0)',
-                                        opacity: 1
-                                    }
-                                ], {
-                                    duration: 200,
-                                    easing: 'ease-out'
-                                }
-                            );
-                        } else {
-                            // kalau kosong lagi, sembunyikan
-                            stickyBar.style.display = "none";
-                        }
+                        stickyBar.style.display = count > 0 ? "block" : "none";
                     }
 
-                    // ✅ toast sukses
                     Toast.fire({
                         icon: 'success',
                         title: data.success || 'Berhasil ditambahkan ke keranjang!'
                     });
                 })
-                .catch(err => {
-                    console.error("Error:", err);
-                    // ❌ toast error jaringan
+                .catch((err) => {
                     Toast.fire({
                         icon: 'error',
                         title: err.message || 'Terjadi kesalahan.'
                     });
                 });
         }
-    </script>
 
-    <script>
         document.addEventListener('DOMContentLoaded', function() {
             const filterButtons = document.querySelectorAll('.filter-btn');
             const cards = document.querySelectorAll('.menu-card');
 
-            filterButtons.forEach(btn => {
+            filterButtons.forEach((btn) => {
                 btn.addEventListener('click', () => {
                     const category = btn.getAttribute('data-category');
+                    filterButtons.forEach((button) => button.classList.remove('active',
+                        'btn-primary'));
+                    filterButtons.forEach((button) => button.classList.add('btn-light'));
+                    btn.classList.add('active', 'btn-primary');
+                    btn.classList.remove('btn-light');
 
-                    // styling aktif badge
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-
-                    // show/hide item
-                    cards.forEach(card => {
+                    cards.forEach((card) => {
                         const cardCat = card.getAttribute('data-category');
-
-                        if (category === 'all' || cardCat === category) {
-                            card.style.display = '';
-                        } else {
-                            card.style.display = 'none';
-                        }
+                        card.style.display = category === 'all' || cardCat === category ?
+                            '' : 'none';
                     });
                 });
-            });
-        });
-    </script>
-    <script>
-        // Ambil semua elemen dengan class .filter-btn
-        const filterButtons = document.querySelectorAll('.filter-btn');
-
-        // Loop setiap tombol kategori
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Hapus class 'active' dari semua tombol
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-
-                // Tambahkan class 'active' ke tombol yang diklik
-                button.classList.add('active');
-
-                // (Opsional) Ambil kategori yang diklik
-                const category = button.getAttribute('data-category');
-                console.log("Kategori aktif:", category);
-
-                // (Opsional) kamu bisa panggil fungsi filter di sini
-                // filterItems(category);
             });
         });
     </script>

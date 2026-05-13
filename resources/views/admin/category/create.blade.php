@@ -1,12 +1,12 @@
 @extends('admin.layout.master')
 
-@section('title', 'Tambah Menu')
+@section('title', 'Tambah Kategori')
 @section('content')
     <div class="page-heading">
         <div class="page-title">
             <div class="col-12 col-md-6 order-md-1 order-last">
-                <h3>Tambah Category Menu</h3>
-                <p class="text-subtitle text-muted"> Disini adalah form untuk menambah Category Menu</p>
+                <h3>Tambah Kategori Menu</h3>
+                <p class="text-subtitle text-muted">Isi form berikut untuk menambahkan kategori baru ke tenant aktif.</p>
             </div>
             <div class="card">
                 <div class="card-body">
@@ -19,13 +19,13 @@
                             </ul>
                         </div>
                     @endif
-                    <form class="form" action="{{ route('categories.store') }}" id="categoryForm" method="POST" novalidate>
+                    <form class="form" action="{{ route('categories.store', ['tenant' => $currentTenant->slug]) }}" id="categoryForm" method="POST" novalidate>
                         @csrf
                         <div class="form-body">
                             <div class="row ">
                                 <div class=" ">
                                     <div class="form-group">
-                                        <label for="category_name">Nama Category</label>
+                                        <label for="category_name">Nama Kategori</label>
                                         <input type="text"
                                             class="form-control @error('category_name') is-invalid @enderror"
                                             id="category_name" placeholder="" name="category_name" required
@@ -65,7 +65,7 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Apakah Anda yakin ingin menyimpan data menu ini?
+                    Apakah Anda yakin ingin menyimpan kategori ini?
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -89,7 +89,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tidak</button>
-                    <a href="{{ route('categories.index') }}" class="btn btn-danger">Ya, Batalkan</a>
+                    <a href="{{ route('categories.index', ['tenant' => $currentTenant->slug]) }}" class="btn btn-danger">Ya, Batalkan</a>
                 </div>
             </div>
         </div>
