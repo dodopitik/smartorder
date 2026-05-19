@@ -596,6 +596,7 @@
 
         <div class="footer-note">
             Flow sekarang dipisah jelas: `customer`, `admin tenant`, dan `super admin`.
+            <br><a href="{{ route('platform.tnc') }}" style="color: var(--accent); text-decoration: none;">Syarat & Ketentuan</a>
         </div>
     </main>
 </body>

@@ -9,6 +9,9 @@ Route::get('/', function () {
 });
 
 Route::get('/platform', [LandingController::class, 'index'])->name('landing');
+Route::get('/platform/terms-and-conditions', function () {
+    return view('platform.tnc');
+})->name('platform.tnc');
 
 Route::middleware(['auth', 'tenant.context'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

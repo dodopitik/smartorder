@@ -20,6 +20,7 @@
                         <span id="currentYear"></span>. All right reserved.</span>
                 </div>
                 <div class="col-md-6 my-auto text-center text-md-end">
+                    <a href="{{ route('platform.tnc') }}" class="text-decoration-none me-3" style="opacity: 0.85;">Syarat & Ketentuan</a>
                     {{ $currentTenant?->tagline ?? 'Platform multi tenant untuk order dan operasional outlet.' }}
                 </div>
             </div>
