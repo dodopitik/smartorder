@@ -158,20 +158,31 @@ class PlatformTenantController extends Controller
                 // Hapus categories
                 $tenant->categories()->forceDelete();
 
-                // Hapus users tenant (bukan super admin)
-                $tenant->users()->forceDelete();
+                // Hapus user staf saja (admin, cashier, chef).
+                // Customer (tamu yang pernah pesan) JANGAN dihapus permanen — cukup
+                // lepas dari tenant ini agar histori order tetap utuh dan privasi
+                // data tamu tetap terjaga. tenant_id akan dilepas di sini.
+                $staffRoleNames = ['admin', 'cashier', 'chef'];
+
+                $tenant->users()
+                    ->whereHas('role', fn ($query) => $query->whereIn('role_name', $staffRoleNames))
+                    ->forceDelete();
+
+                $tenant->users()
+                    ->whereHas('role', fn ($query) => $query->whereNotIn('role_name', $staffRoleNames))
+                    ->update(['tenant_id' => null]);
 
                 // Hapus tenant
                 $tenant->delete();
             });
 
-            return redirect()->route('platform.tenants.index')->with('success', 'Tenant beserta seluruh datanya berhasil dihapus permanen.');
+            return redirect()->route('platform.tenants.index')->with('success', 'Tenant beserta seluruh datanya berhasil dihapus permanen. Data tamu (customer) tidak ikut dihapus untuk menjaga histori dan privasi.');
         }
 
         $hasRelatedData = $tenant->orders()->exists()
             || $tenant->items()->exists()
             || $tenant->categories()->exists()
-            || $tenant->users()->exists();
+            || $tenant->users()->whereHas('role', fn ($query) => $query->whereIn('role_name', ['admin', 'cashier', 'chef']))->exists();
 
         if ($hasRelatedData) {
             return redirect()->route('platform.tenants.index')

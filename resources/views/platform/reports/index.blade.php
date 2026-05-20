@@ -226,6 +226,10 @@
                 <p class="value">Rp {{ number_format($totalTax, 0, ',', '.') }}</p>
             </div>
             <div class="report-kpi">
+                <div class="label">Platform Fee (settlement)</div>
+                <p class="value" style="color:#16a34a;">Rp {{ number_format($totalPlatformFee, 0, ',', '.') }}</p>
+            </div>
+            <div class="report-kpi">
                 <div class="label">Rata-rata / Order</div>
                 <p class="value">Rp {{ number_format($avgOrderValue, 0, ',', '.') }}</p>
             </div>
@@ -263,7 +267,7 @@
                 <div class="breakdown-item">
                     <div>
                         <strong>{{ $tb['tenant_name'] }}</strong>
-                        <div class="small text-muted">{{ $tb['order_count'] }} pesanan</div>
+                        <div class="small text-muted">{{ $tb['order_count'] }} pesanan · Platform fee Rp {{ number_format($tb['platform_fee'], 0, ',', '.') }}</div>
                     </div>
                     <strong>Rp {{ number_format($tb['revenue'], 0, ',', '.') }}</strong>
                 </div>
@@ -292,6 +296,7 @@
                                     <th>Pelanggan</th>
                                     <th>Kamar</th>
                                     <th>Grand Total</th>
+                                    <th>Platform Fee</th>
                                     <th>Bayar</th>
                                     <th>Status</th>
                                 </tr>
@@ -306,6 +311,13 @@
                                         <td>{{ $order->user?->fullname ?? '-' }}</td>
                                         <td>{{ $order->table_number ?: '-' }}</td>
                                         <td><strong>Rp {{ number_format($order->grandtotal, 0, ',', '.') }}</strong></td>
+                                        <td class="small">
+                                            @if ($order->status === 'settlement')
+                                                Rp {{ number_format((int) $order->platform_fee, 0, ',', '.') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
                                         <td>
                                             <span class="platform-badge {{ $order->payment_method === 'qris' ? 'active' : '' }}" style="{{ $order->payment_method === 'cash' ? 'background:rgba(245,158,11,0.12);color:#b45309;' : '' }}">
                                                 {{ strtoupper($order->payment_method) }}

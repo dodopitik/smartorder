@@ -163,11 +163,19 @@
                                         <span class="ms-2 text-muted small">{{ $tenantData->disbursed_orders->count() }} order — Rp {{ number_format($tenantData->disbursed_total, 0, ',', '.') }}</span>
                                         <i class="bi bi-chevron-down ms-1 small"></i>
                                     </h6>
-                                    <form action="{{ route('platform.disbursement.undo') }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <input type="hidden" name="tenant_id" value="{{ $tenantData->tenant->id }}">
-                                        <button type="submit" class="btn btn-outline-secondary btn-sm">Reset</button>
-                                    </form>
+                                    @if ($tenantData->latest_batch_id)
+                                        <form action="{{ route('platform.disbursement.undo') }}" method="POST" class="d-inline js-undo-disbursed"
+                                            data-tenant="{{ $tenantData->tenant->name }}"
+                                            data-count="{{ $tenantData->latest_batch_count }}"
+                                            data-amount="Rp {{ number_format($tenantData->latest_batch_total, 0, ',', '.') }}"
+                                            data-when="{{ $tenantData->latest_batch_at ? \Carbon\Carbon::parse($tenantData->latest_batch_at)->format('d/m/Y H:i') : '-' }}">
+                                            @csrf
+                                            <input type="hidden" name="tenant_id" value="{{ $tenantData->tenant->id }}">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm" title="Batalkan batch penyetoran terakhir">
+                                                Reset Batch Terakhir
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                                 <div class="disb-done-list d-none">
                                     <div class="table-responsive">
@@ -180,6 +188,7 @@
                                                     <th>Kamar</th>
                                                     <th class="text-end">Grand Total</th>
                                                     <th>Disetor</th>
+                                                    <th>Batch</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -191,6 +200,16 @@
                                                         <td>{{ $order->table_number ?: '-' }}</td>
                                                         <td class="text-end">Rp {{ number_format($order->grandtotal, 0, ',', '.') }}</td>
                                                         <td class="small text-muted">{{ $order->disbursed_at ? \Carbon\Carbon::parse($order->disbursed_at)->format('d/m/Y') : '-' }}</td>
+                                                        <td class="small text-muted">
+                                                            @if ($order->disbursement_batch_id)
+                                                                <code style="font-size: 0.7rem;">{{ \Illuminate\Support\Str::substr($order->disbursement_batch_id, -6) }}</code>
+                                                                @if ($order->disbursement_batch_id === $tenantData->latest_batch_id)
+                                                                    <span class="badge bg-warning-subtle text-warning ms-1" style="font-size:0.65rem;">terakhir</span>
+                                                                @endif
+                                                            @else
+                                                                <span class="text-muted">-</span>
+                                                            @endif
+                                                        </td>
                                                     </tr>
                                                 @endforeach
                                             </tbody>
@@ -246,6 +265,31 @@
                         confirmButtonText: 'Ya, sudah disetor',
                         cancelButtonText: 'Batal',
                         confirmButtonColor: '#16a34a',
+                        reverseButtons: true
+                    }).then(function(result) {
+                        if (result.isConfirmed) {
+                            HTMLFormElement.prototype.submit.call(form);
+                        }
+                    });
+                });
+            });
+
+            document.querySelectorAll('.js-undo-disbursed').forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    var tenant = form.dataset.tenant;
+                    var count = form.dataset.count;
+                    var amount = form.dataset.amount;
+                    var when = form.dataset.when;
+
+                    Swal.fire({
+                        title: 'Batalkan batch terakhir?',
+                        html: '<div class="text-start"><p>Tenant: <b>' + tenant + '</b></p><p>Batch yang dibatalkan: <b>' + count + ' order</b></p><p>Total: <b>' + amount + '</b></p><p>Disetor pada: <b>' + when + '</b></p><p class="text-muted small">Hanya batch terakhir yang akan dikembalikan ke status belum disetor. Batch sebelumnya tetap aman.</p></div>',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: 'Ya, batalkan batch ini',
+                        cancelButtonText: 'Batal',
+                        confirmButtonColor: '#dc2626',
                         reverseButtons: true
                     }).then(function(result) {
                         if (result.isConfirmed) {

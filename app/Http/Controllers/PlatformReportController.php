@@ -33,6 +33,7 @@ class PlatformReportController extends Controller
         $totalOrders = $orders->count();
         $totalRevenue = (int) $orders->sum('grandtotal');
         $totalTax = (int) $orders->sum('tax');
+        $totalPlatformFee = (int) $orders->where('status', 'settlement')->sum('platform_fee');
         $avgOrderValue = $totalOrders > 0 ? (int) round($totalRevenue / $totalOrders) : 0;
         $cashOrders = $orders->where('payment_method', 'cash')->count();
         $qrisOrders = $orders->where('payment_method', 'qris')->count();
@@ -47,6 +48,7 @@ class PlatformReportController extends Controller
                 'order_count' => $group->count(),
                 'revenue' => (int) $group->sum('grandtotal'),
                 'tax' => (int) $group->sum('tax'),
+                'platform_fee' => (int) $group->where('status', 'settlement')->sum('platform_fee'),
             ];
         })->sortByDesc('revenue')->values();
 
@@ -64,6 +66,7 @@ class PlatformReportController extends Controller
             'totalOrders' => $totalOrders,
             'totalRevenue' => $totalRevenue,
             'totalTax' => $totalTax,
+            'totalPlatformFee' => $totalPlatformFee,
             'avgOrderValue' => $avgOrderValue,
             'cashOrders' => $cashOrders,
             'qrisOrders' => $qrisOrders,
@@ -102,6 +105,7 @@ class PlatformReportController extends Controller
 
             // Use semicolon delimiter for better Excel compatibility
             $sep = ';';
+            $blank = ['']; // PHP 8.4 deprecates empty array on fputcsv
 
             // === HEADER INFO ===
             fputcsv($handle, ['LAPORAN ARCHANA ORDER'], $sep);
@@ -109,34 +113,37 @@ class PlatformReportController extends Controller
             fputcsv($handle, ['Tanggal Mulai', Carbon::parse($startDate)->format('d/m/Y')], $sep);
             fputcsv($handle, ['Tanggal Akhir', Carbon::parse($endDate)->format('d/m/Y')], $sep);
             fputcsv($handle, ['Diekspor Pada', now()->format('d/m/Y H:i:s')], $sep);
-            fputcsv($handle, [], $sep);
+            fputcsv($handle, $blank, $sep);
 
             // === RINGKASAN ===
+            $settlementOrders = $orders->where('status', 'settlement');
             fputcsv($handle, ['RINGKASAN', 'Nilai'], $sep);
             fputcsv($handle, ['Total Pesanan', $orders->count()], $sep);
             fputcsv($handle, ['Total Revenue (Rp)', (int) $orders->sum('grandtotal')], $sep);
             fputcsv($handle, ['Total Subtotal (Rp)', (int) $orders->sum('subtotal')], $sep);
             fputcsv($handle, ['Total Pajak (Rp)', (int) $orders->sum('tax')], $sep);
+            fputcsv($handle, ['Total Platform Fee (Rp)', (int) $settlementOrders->sum('platform_fee')], $sep);
             fputcsv($handle, ['Pesanan Cash', $orders->where('payment_method', 'cash')->count()], $sep);
             fputcsv($handle, ['Pesanan QRIS', $orders->where('payment_method', 'qris')->count()], $sep);
             fputcsv($handle, ['Status Pending', $orders->where('status', 'pending')->count()], $sep);
-            fputcsv($handle, ['Status Settlement', $orders->where('status', 'settlement')->count()], $sep);
+            fputcsv($handle, ['Status Settlement', $settlementOrders->count()], $sep);
             fputcsv($handle, ['Status Cooked', $orders->where('status', 'cooked')->count()], $sep);
-            fputcsv($handle, [], $sep);
+            fputcsv($handle, $blank, $sep);
 
             // === BREAKDOWN PER TENANT ===
             $tenantGroups = $orders->groupBy(fn ($o) => $o->tenant?->name ?? 'Unknown');
             if ($tenantGroups->count() > 1) {
-                fputcsv($handle, ['BREAKDOWN PER TENANT', 'Jumlah Order', 'Revenue (Rp)', 'Pajak (Rp)'], $sep);
+                fputcsv($handle, ['BREAKDOWN PER TENANT', 'Jumlah Order', 'Revenue (Rp)', 'Pajak (Rp)', 'Platform Fee (Rp)'], $sep);
                 foreach ($tenantGroups as $tenantName => $group) {
                     fputcsv($handle, [
                         $tenantName,
                         $group->count(),
                         (int) $group->sum('grandtotal'),
                         (int) $group->sum('tax'),
+                        (int) $group->where('status', 'settlement')->sum('platform_fee'),
                     ], $sep);
                 }
-                fputcsv($handle, [], $sep);
+                fputcsv($handle, $blank, $sep);
             }
 
             // === DETAIL PESANAN ===
@@ -151,6 +158,7 @@ class PlatformReportController extends Controller
                 'Subtotal (Rp)',
                 'Pajak (Rp)',
                 'Grand Total (Rp)',
+                'Platform Fee (Rp)',
                 'Metode Bayar',
                 'Status',
                 'Item Dipesan',
@@ -175,6 +183,7 @@ class PlatformReportController extends Controller
                     $order->subtotal,
                     $order->tax,
                     $order->grandtotal,
+                    $order->status === 'settlement' ? (int) $order->platform_fee : 0,
                     strtoupper($order->payment_method),
                     ucfirst($order->status),
                     $itemList,
