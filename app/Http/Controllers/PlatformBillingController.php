@@ -20,7 +20,9 @@ class PlatformBillingController extends Controller
             ->leftJoin('orders', function ($join) use ($currentYear, $currentMonth): void {
                 $join->on('tenants.id', '=', 'orders.tenant_id')
                     ->whereYear('orders.created_at', $currentYear)
-                    ->whereMonth('orders.created_at', $currentMonth);
+                    ->whereMonth('orders.created_at', $currentMonth)
+                    ->whereNull('orders.deleted_at')
+                    ->where('orders.status', 'settlement');
             })
             ->groupBy('tenants.id', 'tenants.name', 'tenants.slug')
             ->orderBy('tenants.name')
@@ -30,11 +32,8 @@ class PlatformBillingController extends Controller
                 'tenants.slug',
                 DB::raw('COUNT(orders.id) as order_count'),
                 DB::raw('COALESCE(SUM(orders.grandtotal), 0) as gross_revenue'),
-            ])
-            ->map(function ($billing) use ($feePerOrder) {
-                $billing->platform_fee = $billing->order_count * $feePerOrder;
-                return $billing;
-            });
+                DB::raw('COALESCE(SUM(orders.platform_fee), 0) as platform_fee'),
+            ]);
 
         $grossRevenue = (int) $billings->sum('gross_revenue');
         $platformFeeTotal = (int) $billings->sum('platform_fee');

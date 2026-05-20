@@ -21,8 +21,10 @@ class Order extends Model
         'table_number',
         'notes',
         'grandtotal',
+        'platform_fee',
         'is_disbursed',
         'disbursed_at',
+        'disbursement_batch_id',
     ];
 
     protected $dates = ['deleted_at'];

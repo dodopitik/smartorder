@@ -26,6 +26,9 @@
                         <div class="span-6">
                             <label class="form-label">Fee per Order</label>
                             <input type="number" min="0" name="monthly_fee_per_order" class="form-control" value="{{ old('monthly_fee_per_order', $settings['monthly_fee_per_order']) }}" required>
+                            <small class="text-muted d-block mt-1">
+                                Fee ini disimpan per transaksi pada saat order dibuat. Mengubah nilai di sini hanya berlaku untuk transaksi <strong>setelah</strong> perubahan disimpan; transaksi lama tetap memakai fee aslinya.
+                            </small>
                         </div>
                         <div class="span-6">
                             <label class="form-label">Support Email</label>

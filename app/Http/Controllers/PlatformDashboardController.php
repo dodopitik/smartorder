@@ -23,12 +23,16 @@ class PlatformDashboardController extends Controller
         $monthlyGrossRevenue = (int) Order::query()
             ->whereYear('created_at', now()->year)
             ->whereMonth('created_at', now()->month)
+            ->where('status', 'settlement')
             ->sum('grandtotal');
         $platformRevenueBase = (int) AppSetting::getValue('monthly_fee_per_order', '1000');
-        $estimatedMonthlyFee = Order::query()
+        // Sum the snapshotted fee per order so historical orders keep their
+        // own fee even after the global setting changes.
+        $estimatedMonthlyFee = (int) Order::query()
             ->whereYear('created_at', now()->year)
             ->whereMonth('created_at', now()->month)
-            ->count() * $platformRevenueBase;
+            ->where('status', 'settlement')
+            ->sum('platform_fee');
         $averageOrderValue = $totalOrders > 0 ? (int) round($totalRevenue / $totalOrders) : 0;
 
         $tenantSnapshots = Tenant::query()

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\NewOrderNotificationMail;
+use App\Models\AppSetting;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -221,7 +222,11 @@ class MenuController extends Controller
         $customerRoleId = Role::query()->where('role_name', 'customer')->value('id')
             ?? abort(500, 'Role customer belum tersedia.');
 
-        [$user, $order] = DB::transaction(function () use ($request, $tenant, $customerRoleId, $roomNumber, $totalAmount, $cart) {
+        // Snapshot the platform fee at the moment of order creation so any
+        // future change in the global setting does NOT alter historical orders.
+        $platformFeeSnapshot = (int) AppSetting::getValue('monthly_fee_per_order', '1000');
+
+        [$user, $order] = DB::transaction(function () use ($request, $tenant, $customerRoleId, $roomNumber, $totalAmount, $cart, $platformFeeSnapshot) {
             $user = User::firstOrCreate(
                 [
                     'tenant_id' => $tenant->id,
@@ -243,6 +248,7 @@ class MenuController extends Controller
                 'subtotal' => $totalAmount,
                 'tax' => (int) round(0.11 * $totalAmount),
                 'grandtotal' => (int) round($totalAmount + ($totalAmount * 0.11)),
+                'platform_fee' => $platformFeeSnapshot,
                 'status' => 'pending',
                 'table_number' => (int) ($roomNumber ?: 0),
                 'payment_method' => $request->payment_method,
