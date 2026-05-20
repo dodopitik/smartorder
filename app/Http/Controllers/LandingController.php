@@ -9,11 +9,16 @@ class LandingController extends Controller
 {
     public function index(): View
     {
+        return view('welcome');
+    }
+
+    public function portal(): View
+    {
         $tenants = Tenant::query()
             ->where('is_active', true)
             ->orderBy('name')
             ->get();
 
-        return view('welcome', compact('tenants'));
+        return view('platform.portal', compact('tenants'));
     }
 }
