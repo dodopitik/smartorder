@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Item;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class ItemController extends Controller
@@ -53,12 +54,9 @@ class ItemController extends Controller
 
         $validatedData['tenant_id'] = $tenant->id;
         Item::create($validatedData);
+        $this->forgetTenantMenuCache($tenant->id);
 
         return redirect()->route('items.index', ['tenant' => $tenant->slug])->with('success', 'Menu berhasil ditambahkan.');
-    }
-
-    public function show(string $tenant, string $id)
-    {
     }
 
     public function edit(string $tenant, string $id)
@@ -100,6 +98,7 @@ class ItemController extends Controller
         }
 
         $item->update($validatedData);
+        $this->forgetTenantMenuCache($tenantModel->id);
 
         return redirect()->route('items.index', ['tenant' => $tenantModel->slug])->with('success', 'Menu berhasil diperbarui.');
     }
@@ -114,7 +113,13 @@ class ItemController extends Controller
         }
 
         $item->delete();
+        $this->forgetTenantMenuCache($tenantModel->id);
 
         return redirect()->route('items.index', ['tenant' => $tenantModel->slug])->with('success', 'Menu berhasil dihapus.');
+    }
+
+    private function forgetTenantMenuCache(int $tenantId): void
+    {
+        Cache::forget('tenant.' . $tenantId . '.menu.items.available');
     }
 }

@@ -496,4 +496,6 @@
             color: #111827;
         }
     </style>
+
+    @yield('css')
 </head>

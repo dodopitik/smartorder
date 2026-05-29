@@ -14,13 +14,13 @@
     <div class="page-content">
         <section class="platform-shell">
             <div class="platform-hero">
-                <div class="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-4">
+                <div class="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-3">
                     <div>
                         <span class="badge text-uppercase mb-3">Platform Control Center</span>
                         <h2 class="mb-3">Satu panel untuk tenant, owner, billing, dan health bisnis.</h2>
                         <p class="text-muted mb-0" style="max-width: 720px;">{{ $heroMessage }}</p>
                     </div>
-                    <div class="d-flex gap-2 flex-wrap">
+                    <div class="d-flex gap-2 flex-wrap flex-column flex-sm-row w-100 w-lg-auto">
                         <a href="{{ route('platform.tenants.create') }}" class="btn btn-primary">Tambah Tenant</a>
                         <a href="{{ route('platform.billing.index') }}" class="btn btn-outline-primary">Lihat Billing</a>
                     </div>
@@ -75,7 +75,7 @@
                     <div class="card-body">
                         <div class="row g-3">
                             @forelse ($tenantSnapshots as $tenant)
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-sm-6">
                                     <div class="border rounded-4 p-3 h-100">
                                         <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
                                             <div>

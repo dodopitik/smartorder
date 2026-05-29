@@ -11,6 +11,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -35,12 +36,14 @@ class MenuController extends Controller
 
         $roomNumber ??= Session::get($this->roomKey($tenant));
 
-        $items = Item::query()
-            ->where('tenant_id', $tenant->id)
-            ->where('is_available', 1)
-            ->with('category')
-            ->orderBy('name', 'asc')
-            ->get();
+        $items = Cache::remember($this->menuItemsCacheKey($tenant), now()->addMinutes(10), function () use ($tenant) {
+            return Item::query()
+                ->where('tenant_id', $tenant->id)
+                ->where('is_available', 1)
+                ->with('category')
+                ->orderBy('name', 'asc')
+                ->get();
+        });
 
         return view('customer.menu', compact('items', 'roomNumber'));
     }
@@ -200,9 +203,17 @@ class MenuController extends Controller
         $totalAmount = 0;
         $itemDetails = [];
 
-        // Re-fetch harga dari database untuk memastikan harga terkini
+        $cartItemIds = collect($cart)->pluck('id')->filter()->unique()->values();
+        $dbItems = Item::query()
+            ->where('tenant_id', $tenant->id)
+            ->where('is_available', 1)
+            ->whereIn('id', $cartItemIds)
+            ->get()
+            ->keyBy('id');
+
+        // Re-fetch harga dari database untuk memastikan harga terkini.
         foreach ($cart as $key => $cartItem) {
-            $dbItem = Item::where('tenant_id', $tenant->id)->where('is_available', 1)->find($cartItem['id']);
+            $dbItem = $dbItems->get($cartItem['id']);
             if (! $dbItem) {
                 return redirect()->route('tenant.cart', ['tenant' => $tenant->slug])
                     ->with('error', 'Menu "' . ($cartItem['name'] ?? '') . '" sudah tidak tersedia. Silakan hapus dari keranjang.');
@@ -271,6 +282,7 @@ class MenuController extends Controller
 
         Session::put($this->lastOrderKey($tenant), $order->order_code);
         Session::forget($this->cartKey($tenant));
+        Cache::forget($this->dashboardCacheKey($tenant));
 
         // Kirim email notifikasi jika diaktifkan
         $this->sendOrderNotificationEmail($tenant, $order);
@@ -401,6 +413,7 @@ class MenuController extends Controller
             }
 
             $order->save();
+            Cache::forget('tenant.' . $order->tenant_id . '.dashboard.stats');
 
             return response()->json(['received' => true]);
         } catch (\Throwable $throwable) {
@@ -455,6 +468,16 @@ class MenuController extends Controller
     private function lastOrderKey(Tenant $tenant): string
     {
         return 'last_order_code.tenant.' . $tenant->id;
+    }
+
+    private function menuItemsCacheKey(Tenant $tenant): string
+    {
+        return 'tenant.' . $tenant->id . '.menu.items.available';
+    }
+
+    private function dashboardCacheKey(Tenant $tenant): string
+    {
+        return 'tenant.' . $tenant->id . '.dashboard.stats';
     }
 
     private function normalizeRoomNumber(mixed $value): ?int

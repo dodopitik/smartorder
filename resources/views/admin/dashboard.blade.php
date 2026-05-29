@@ -393,6 +393,198 @@
             .tenant-billing-grid {
                 grid-template-columns: 1fr;
             }
+
+            .tenant-dashboard-hero {
+                padding: 1.35rem;
+                border-radius: 22px;
+            }
+
+            .tenant-dashboard-headline {
+                flex-direction: column;
+            }
+
+            .tenant-dashboard-hero-metrics {
+                min-width: 100%;
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tenant-kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tenant-panel-card {
+                border-radius: 20px;
+                padding: 1rem;
+            }
+        }
+
+        /* ===== Tenant Dashboard Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .tenant-dashboard-shell {
+                gap: 1rem;
+            }
+
+            .tenant-dashboard-hero {
+                padding: 1.1rem;
+                border-radius: 18px;
+            }
+
+            .tenant-dashboard-title {
+                font-size: 1.5rem;
+            }
+
+            .tenant-dashboard-subtitle {
+                font-size: .85rem;
+            }
+
+            .tenant-dashboard-badge {
+                font-size: .7rem;
+                padding: .35rem .65rem;
+            }
+
+            .tenant-dashboard-hero-metrics {
+                grid-template-columns: 1fr;
+                gap: .65rem;
+            }
+
+            .hero-metric {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .hero-metric .label {
+                font-size: .78rem;
+            }
+
+            .hero-metric .value {
+                font-size: 1.05rem;
+            }
+
+            .tenant-kpi-grid {
+                grid-template-columns: 1fr;
+                gap: .85rem;
+            }
+
+            .tenant-kpi-card {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .tenant-kpi-icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
+                font-size: 1rem;
+            }
+
+            .tenant-kpi-label {
+                font-size: .82rem;
+                margin-top: .75rem;
+            }
+
+            .tenant-kpi-value {
+                font-size: 1.3rem;
+            }
+
+            .tenant-kpi-note {
+                font-size: .78rem;
+            }
+
+            .tenant-panel-card {
+                padding: .9rem;
+                border-radius: 16px;
+            }
+
+            .tenant-panel-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .5rem;
+            }
+
+            .tenant-panel-title {
+                font-size: .95rem;
+            }
+
+            .tenant-panel-copy {
+                font-size: .82rem;
+            }
+
+            .tenant-mini-badge {
+                font-size: .68rem;
+                padding: .3rem .6rem;
+            }
+
+            .chart-wrap {
+                min-height: 220px;
+            }
+
+            .chart-empty {
+                min-height: 180px;
+                font-size: .85rem;
+            }
+
+            .tenant-billing-grid {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .tenant-fee-card {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .tenant-fee-card .value {
+                font-size: 1.2rem;
+            }
+
+            .tenant-fee-card .label {
+                font-size: .8rem;
+            }
+
+            .tenant-fee-card .note {
+                font-size: .78rem;
+            }
+
+            .status-row {
+                gap: .55rem;
+            }
+
+            .status-meta strong {
+                font-size: .85rem;
+            }
+
+            .status-meta span {
+                font-size: .76rem;
+            }
+
+            .status-count {
+                font-size: .9rem;
+            }
+        }
+
+        /* ===== Tenant Dashboard Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .tenant-dashboard-hero {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .tenant-dashboard-title {
+                font-size: 1.25rem;
+            }
+
+            .tenant-kpi-card {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .tenant-kpi-value {
+                font-size: 1.15rem;
+            }
+
+            .chart-wrap {
+                min-height: 180px;
+            }
         }
     </style>
 @endsection
@@ -629,6 +821,7 @@
 @endsection
 
 @section('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <script>
         const chartTheme = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
         const axisColor = chartTheme === 'dark' ? '#94a3b8' : '#64748b';

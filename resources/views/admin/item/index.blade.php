@@ -326,6 +326,184 @@
                 justify-content: flex-start;
             }
         }
+
+        /* ===== Catalog Responsive: Tablet ===== */
+        @media (max-width: 991.98px) {
+            .catalog-hero {
+                padding: 1.25rem;
+                border-radius: 22px;
+            }
+
+            .catalog-kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: .85rem;
+            }
+
+            .catalog-kpi {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+
+            .catalog-kpi-value {
+                font-size: 1.4rem;
+            }
+
+            .catalog-card {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+        }
+
+        /* ===== Catalog Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .catalog-shell {
+                gap: .9rem;
+            }
+
+            .catalog-hero {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .catalog-title {
+                font-size: 1.3rem;
+            }
+
+            .catalog-copy {
+                font-size: .82rem;
+            }
+
+            .catalog-eyebrow {
+                font-size: .68rem;
+                padding: .35rem .65rem;
+            }
+
+            .catalog-hero-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: .75rem;
+            }
+
+            .catalog-quick {
+                flex-wrap: wrap;
+                gap: .5rem;
+            }
+
+            .catalog-quick-chip {
+                font-size: .76rem;
+                padding: .5rem .7rem;
+            }
+
+            .catalog-hero-bar .btn {
+                width: 100%;
+            }
+
+            .catalog-kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .65rem;
+            }
+
+            .catalog-kpi {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .catalog-kpi-label {
+                font-size: .78rem;
+            }
+
+            .catalog-kpi-value {
+                font-size: 1.15rem;
+            }
+
+            .catalog-kpi-note {
+                font-size: .72rem;
+                display: none;
+            }
+
+            .catalog-card {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .catalog-card-head {
+                flex-direction: column;
+                gap: .5rem;
+            }
+
+            .catalog-card-title {
+                font-size: .95rem;
+            }
+
+            .catalog-card-copy {
+                font-size: .8rem;
+            }
+
+            .catalog-table-wrap {
+                margin: 0 -.5rem;
+                padding: 0 .5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .catalog-table {
+                min-width: 620px;
+            }
+
+            .catalog-table thead th {
+                font-size: .7rem;
+                padding: 0 .65rem .2rem;
+            }
+
+            .catalog-table tbody td {
+                padding: .75rem .65rem;
+                font-size: .82rem;
+            }
+
+            .menu-item {
+                min-width: 180px;
+                gap: .65rem;
+            }
+
+            .menu-item img {
+                width: 52px;
+                height: 52px;
+                border-radius: 14px;
+            }
+
+            .menu-item-name {
+                font-size: .85rem;
+            }
+
+            .catalog-actions .btn {
+                font-size: .72rem;
+                padding: .3rem .55rem;
+            }
+        }
+
+        /* ===== Catalog Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .catalog-kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .catalog-hero {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .catalog-title {
+                font-size: 1.1rem;
+            }
+
+            .catalog-kpi-value {
+                font-size: 1.05rem;
+            }
+
+            .catalog-card {
+                padding: .7rem;
+                border-radius: 14px;
+            }
+        }
     </style>
 @endsection
 

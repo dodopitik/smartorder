@@ -293,6 +293,149 @@
                 justify-content: flex-start;
             }
         }
+
+        /* ===== Staff Responsive: Tablet ===== */
+        @media (max-width: 991.98px) {
+            .staff-hero {
+                padding: 1.25rem;
+                border-radius: 22px;
+            }
+
+            .staff-kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .staff-card {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+        }
+
+        /* ===== Staff Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .staff-shell {
+                gap: .9rem;
+            }
+
+            .staff-hero {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .staff-title {
+                font-size: 1.3rem;
+            }
+
+            .staff-copy {
+                font-size: .82rem;
+            }
+
+            .staff-eyebrow {
+                font-size: .68rem;
+                padding: .35rem .65rem;
+            }
+
+            .staff-hero-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: .75rem;
+            }
+
+            .staff-quick-chip {
+                font-size: .76rem;
+                padding: .5rem .7rem;
+            }
+
+            .staff-hero-bar .btn {
+                width: 100%;
+            }
+
+            .staff-kpi-grid {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .staff-kpi {
+                padding: .9rem;
+                border-radius: 16px;
+            }
+
+            .staff-kpi-label {
+                font-size: .8rem;
+            }
+
+            .staff-kpi-value {
+                font-size: 1.2rem;
+            }
+
+            .staff-kpi-note {
+                font-size: .76rem;
+            }
+
+            .staff-card {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .staff-card-head {
+                flex-direction: column;
+                gap: .5rem;
+            }
+
+            .staff-card-title {
+                font-size: .95rem;
+            }
+
+            .staff-card-copy {
+                font-size: .8rem;
+            }
+
+            .staff-table-wrap {
+                margin: 0 -.5rem;
+                padding: 0 .5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .staff-table {
+                min-width: 680px;
+            }
+
+            .staff-table thead th {
+                font-size: .7rem;
+                padding: 0 .65rem .2rem;
+            }
+
+            .staff-table tbody td {
+                padding: .75rem .65rem;
+                font-size: .82rem;
+            }
+
+            .staff-actions .btn {
+                font-size: .72rem;
+                padding: .3rem .55rem;
+            }
+        }
+
+        /* ===== Staff Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .staff-hero {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .staff-title {
+                font-size: 1.1rem;
+            }
+
+            .staff-kpi-value {
+                font-size: 1.05rem;
+            }
+
+            .staff-card {
+                padding: .7rem;
+                border-radius: 14px;
+            }
+        }
     </style>
 @endsection
 

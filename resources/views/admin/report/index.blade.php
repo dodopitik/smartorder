@@ -397,6 +397,203 @@
 
             .report-filter-bar {
                 align-items: stretch;
+                flex-direction: column;
+            }
+
+            .report-tabs {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .report-date-form {
+                width: 100%;
+            }
+
+            .report-date-form .form-control {
+                min-width: unset;
+                flex: 1;
+            }
+        }
+
+        /* ===== Tenant Report Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .report-shell {
+                gap: .9rem;
+            }
+
+            .report-hero {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .report-title {
+                font-size: 1.3rem;
+            }
+
+            .report-copy {
+                font-size: .82rem;
+            }
+
+            .report-eyebrow {
+                font-size: .68rem;
+                padding: .35rem .65rem;
+            }
+
+            .report-tabs {
+                flex-wrap: wrap;
+                border-radius: 18px;
+                padding: .3rem;
+                gap: .4rem;
+            }
+
+            .report-tab {
+                padding: .55rem .75rem;
+                font-size: .78rem;
+                flex: 1;
+                justify-content: center;
+            }
+
+            .report-date-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .report-date-form .form-control {
+                width: 100%;
+            }
+
+            .report-date-form .btn {
+                width: 100%;
+            }
+
+            .report-kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .65rem;
+            }
+
+            .report-kpi {
+                padding: .9rem;
+                border-radius: 16px;
+            }
+
+            .report-kpi-label {
+                font-size: .78rem;
+            }
+
+            .report-kpi-value {
+                font-size: 1.15rem;
+            }
+
+            .report-kpi-note {
+                font-size: .72rem;
+                display: none;
+            }
+
+            .report-card {
+                padding: .9rem;
+                border-radius: 16px;
+            }
+
+            .report-card-header {
+                flex-direction: column;
+                gap: .5rem;
+            }
+
+            .report-card-title {
+                font-size: .95rem;
+            }
+
+            .report-card-copy {
+                font-size: .8rem;
+            }
+
+            .report-chip {
+                font-size: .68rem;
+                padding: .3rem .55rem;
+            }
+
+            .report-table-wrap {
+                margin: 0 -.5rem;
+                padding: 0 .5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .report-table {
+                min-width: 580px;
+            }
+
+            .report-table th {
+                font-size: .72rem;
+            }
+
+            .report-table td,
+            .report-table th {
+                padding: .7rem .6rem;
+                font-size: .82rem;
+            }
+
+            .report-hour-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .55rem;
+            }
+
+            .report-hour-card {
+                padding: .75rem;
+                border-radius: 14px;
+            }
+
+            .report-hour-card .label {
+                font-size: .76rem;
+            }
+
+            .report-hour-card .value {
+                font-size: .88rem;
+            }
+
+            .report-top-item {
+                padding: .8rem;
+                border-radius: 14px;
+            }
+
+            .report-row {
+                gap: .55rem;
+            }
+
+            .report-row strong {
+                font-size: .88rem;
+            }
+
+            .report-row span {
+                font-size: .76rem;
+            }
+        }
+
+        /* ===== Tenant Report Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .report-kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-hero {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .report-title {
+                font-size: 1.1rem;
+            }
+
+            .report-tabs {
+                flex-direction: column;
+            }
+
+            .report-hour-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .report-card {
+                padding: .75rem;
+                border-radius: 14px;
             }
         }
     </style>

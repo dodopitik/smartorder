@@ -157,6 +157,111 @@
         .breakdown-item:last-child {
             border-bottom: none;
         }
+
+        /* ===== Report Responsive: Tablet ===== */
+        @media (max-width: 991.98px) {
+            .report-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .report-filter-group {
+                width: 100%;
+            }
+
+            .report-filter-group select,
+            .report-filter-group input {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .report-period-tabs {
+                width: 100%;
+            }
+
+            .report-period-tabs .period-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .report-kpis {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            }
+        }
+
+        /* ===== Report Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .report-kpis {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .65rem;
+            }
+
+            .report-kpi {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .report-kpi .label {
+                font-size: .76rem;
+            }
+
+            .report-kpi .value {
+                font-size: 1.1rem;
+            }
+
+            .report-period-tabs .period-btn {
+                padding: .45rem .8rem;
+                font-size: .78rem;
+            }
+
+            .report-table-wrap {
+                margin: 0 -.5rem;
+                padding: 0 .5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .report-table {
+                min-width: 700px;
+            }
+
+            .report-table thead th {
+                font-size: .7rem;
+                padding: 0 .6rem .3rem;
+            }
+
+            .report-table tbody td {
+                padding: .7rem .6rem;
+                font-size: .82rem;
+            }
+
+            .breakdown-card {
+                padding: 1rem;
+                border-radius: 16px;
+            }
+
+            .breakdown-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .35rem;
+                padding: .65rem 0;
+            }
+        }
+
+        /* ===== Report Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .report-kpis {
+                grid-template-columns: 1fr;
+            }
+
+            .report-period-tabs {
+                flex-direction: column;
+            }
+
+            .report-period-tabs .period-btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
     </style>
 @endsection
 

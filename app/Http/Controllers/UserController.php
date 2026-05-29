@@ -69,10 +69,6 @@ class UserController extends Controller
         return redirect()->route('users.index', ['tenant' => $tenant->slug])->with('success', 'User berhasil ditambahkan.');
     }
 
-    public function show(string $tenant, string $id)
-    {
-    }
-
     public function edit(string $tenant, string $id)
     {
         $users = User::query()

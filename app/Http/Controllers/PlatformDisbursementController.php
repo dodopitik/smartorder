@@ -16,19 +16,25 @@ class PlatformDisbursementController extends Controller
     {
         $feePerOrder = (int) AppSetting::getValue('monthly_fee_per_order', '1000');
 
-        // Ambil semua order QRIS settlement, grouped per tenant
-        $tenants = Tenant::query()
+        // Ambil semua tenant aktif + semua order QRIS settlement dalam 2 query saja,
+        // lalu kelompokkan di memori (hindari N+1: 1 query per tenant).
+        $activeTenants = Tenant::query()
             ->where('is_active', true)
             ->orderBy('name')
+            ->get();
+
+        $ordersByTenant = Order::query()
+            ->whereIn('tenant_id', $activeTenants->pluck('id'))
+            ->where('payment_method', 'qris')
+            ->where('status', 'settlement')
+            ->with('user')
+            ->orderByDesc('created_at')
             ->get()
-            ->map(function ($tenant) {
-                $orders = Order::query()
-                    ->where('tenant_id', $tenant->id)
-                    ->where('payment_method', 'qris')
-                    ->where('status', 'settlement')
-                    ->with('user')
-                    ->orderByDesc('created_at')
-                    ->get();
+            ->groupBy('tenant_id');
+
+        $tenants = $activeTenants
+            ->map(function ($tenant) use ($ordersByTenant) {
+                $orders = $ordersByTenant->get($tenant->id) ?? collect();
 
                 $pendingOrders = $orders->where('is_disbursed', false);
                 $disbursedOrders = $orders->where('is_disbursed', true);

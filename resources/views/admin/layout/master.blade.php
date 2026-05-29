@@ -15,11 +15,30 @@
 
     <div id="app">
         @include('admin.layout.__sidebar')
+
+        {{-- Backdrop overlay untuk sidebar mobile --}}
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
         <div id="main">
-            <header class="mb-3">
-                <a href="#" class="burger-btn d-block d-xl-none">
-                    <i class="bi bi-justify fs-3"></i>
-                </a>
+            {{-- Mobile App Bar (tampil hanya di < xl) --}}
+            <header class="admin-mobile-bar d-flex d-xl-none">
+                <button type="button" class="admin-burger" id="adminBurger" aria-label="Buka menu navigasi">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <div class="admin-mobile-brand">
+                    <span class="admin-mobile-eyebrow">{{ $isSuperAdminLayout ? 'Super Admin' : 'Tenant Admin' }}</span>
+                    <span class="admin-mobile-title">{{ $isSuperAdminLayout ? 'Platform Console' : ($currentTenant?->name ?? 'Admin Panel') }}</span>
+                </div>
+
+                <div class="admin-mobile-actions">
+                    <button type="button" class="admin-mobile-theme" id="themeToggleMobile" aria-label="Ganti mode tampilan">
+                        <i class="bi bi-moon-stars" id="themeToggleMobileIcon"></i>
+                    </button>
+                    <span class="admin-mobile-avatar">{{ $userInitial }}</span>
+                </div>
             </header>
 
             <div class="admin-topbar">
@@ -64,16 +83,14 @@
     <script src="{{ asset('assets/admin/static/js/components/dark.js') }}"></script>
     <script src="{{ asset('assets/admin/extensions/perfect-scrollbar/perfect-scrollbar.min.js') }}"></script>
     <script src="{{ asset('assets/admin/compiled/js/app.js') }}"></script>
-    <!-- Need: Apexcharts -->
-    <script src="{{ asset('assets/admin/extensions/apexcharts/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets/admin/static/js/pages/dashboard.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const root = document.documentElement;
             const toggleButton = document.getElementById('themeToggle');
             const toggleIcon = document.getElementById('themeToggleIcon');
             const toggleLabel = document.getElementById('themeToggleLabel');
+            const toggleButtonMobile = document.getElementById('themeToggleMobile');
+            const toggleIconMobile = document.getElementById('themeToggleMobileIcon');
 
             function applyTheme(theme) {
                 root.setAttribute('data-bs-theme', theme);
@@ -89,14 +106,75 @@
                 if (toggleLabel) {
                     toggleLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
                 }
+
+                if (toggleIconMobile) {
+                    toggleIconMobile.className = isDark ? 'bi bi-sun-fill' : 'bi bi-moon-stars';
+                }
             }
 
             const initialTheme = localStorage.getItem('theme') || root.getAttribute('data-bs-theme') || 'light';
             applyTheme(initialTheme);
 
-            toggleButton?.addEventListener('click', function() {
+            function toggleTheme() {
                 const currentTheme = root.getAttribute('data-bs-theme') === 'dark' ? 'dark' : 'light';
                 applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            }
+
+            toggleButton?.addEventListener('click', toggleTheme);
+            toggleButtonMobile?.addEventListener('click', toggleTheme);
+
+            /* ===== Sidebar Mobile Toggle ===== */
+            const sidebarWrapper = document.querySelector('.sidebar-wrapper');
+            const burger = document.getElementById('adminBurger');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            const sidebarHideBtn = document.querySelector('.sidebar-hide');
+
+            function openSidebar() {
+                sidebarWrapper?.classList.add('sidebar-open');
+                backdrop?.classList.add('show');
+                burger?.classList.add('is-active');
+                document.body.classList.add('sidebar-locked');
+            }
+
+            function closeSidebar() {
+                sidebarWrapper?.classList.remove('sidebar-open');
+                backdrop?.classList.remove('show');
+                burger?.classList.remove('is-active');
+                document.body.classList.remove('sidebar-locked');
+            }
+
+            burger?.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (sidebarWrapper?.classList.contains('sidebar-open')) {
+                    closeSidebar();
+                } else {
+                    openSidebar();
+                }
+            });
+
+            backdrop?.addEventListener('click', closeSidebar);
+            sidebarHideBtn?.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeSidebar();
+            });
+
+            // Tutup sidebar saat klik link navigasi (mobile)
+            document.querySelectorAll('.sidebar-wrapper .menu .sidebar-link').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 1200 && !link.hasAttribute('data-bs-toggle')) {
+                        closeSidebar();
+                    }
+                });
+            });
+
+            // Tutup sidebar dengan tombol Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') closeSidebar();
+            });
+
+            // Reset state saat resize ke desktop
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1200) closeSidebar();
             });
         });
     </script>

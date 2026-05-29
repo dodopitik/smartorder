@@ -7,7 +7,7 @@
                 <div class="col-lg-8">
                     <span class="tenant-pill"><i class="fa fa-credit-card"></i> Checkout {{ $currentTenant?->name }}</span>
                     <h1 class="display-5 fw-bold mt-3 mb-3">Konfirmasi pesanan dan pilih metode pembayaran.</h1>
-                    <p class="text-white-50 fs-5 mb-0">Flow checkout sekarang lebih jelas: customer checkout per tenant, admin tenant menerima order tenant itu saja.</p>
+                    <p class="tenant-hero-copy fs-5 mb-0">Flow checkout sekarang lebih jelas: customer checkout per tenant, admin tenant menerima order tenant itu saja.</p>
                 </div>
                 <div class="col-lg-4">
                     <div class="tenant-card p-4">
@@ -197,8 +197,7 @@
                             onPending: function() {
                                 window.location.href = data.redirect_url;
                             },
-                            onError: function(result) {
-                                console.log(result);
+                            onError: function() {
                                 alert("Pembayaran gagal.");
                             }
                         });

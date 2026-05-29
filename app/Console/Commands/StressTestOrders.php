@@ -22,6 +22,13 @@ class StressTestOrders extends Command
 
     public function handle(): int
     {
+        // Guard: perintah ini membuat data order palsu secara massal.
+        // Jangan pernah dijalankan di production.
+        if (app()->isProduction()) {
+            $this->error('Perintah stress test dinonaktifkan di environment production.');
+            return 1;
+        }
+
         $count = (int) $this->option('count');
         $batchSize = (int) $this->option('concurrent');
         $tenantSlug = $this->option('tenant');

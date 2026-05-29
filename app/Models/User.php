@@ -27,7 +27,13 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected $dates = ['deleted_at'];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'deleted_at' => 'datetime',
+        ];
+    }
 
     public function tenant(): BelongsTo
     {

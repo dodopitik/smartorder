@@ -282,6 +282,141 @@
                 justify-content: flex-start;
             }
         }
+
+        /* ===== Category Panel Responsive: Tablet ===== */
+        @media (max-width: 991.98px) {
+            .panel-hero {
+                padding: 1.25rem;
+                border-radius: 22px;
+            }
+
+            .panel-kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            }
+
+            .panel-card {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+        }
+
+        /* ===== Category Panel Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .panel-shell {
+                gap: .9rem;
+            }
+
+            .panel-hero {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .panel-title {
+                font-size: 1.3rem;
+            }
+
+            .panel-copy {
+                font-size: .82rem;
+            }
+
+            .panel-eyebrow {
+                font-size: .68rem;
+                padding: .35rem .65rem;
+            }
+
+            .panel-hero-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: .75rem;
+            }
+
+            .panel-quick-chip {
+                font-size: .76rem;
+                padding: .5rem .7rem;
+            }
+
+            .panel-hero-bar .btn {
+                width: 100%;
+            }
+
+            .panel-kpi-grid {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .panel-kpi {
+                padding: .9rem;
+                border-radius: 16px;
+            }
+
+            .panel-kpi-label {
+                font-size: .8rem;
+            }
+
+            .panel-kpi-value {
+                font-size: 1.2rem;
+            }
+
+            .panel-card {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .panel-card-head {
+                flex-direction: column;
+                gap: .5rem;
+            }
+
+            .panel-card-title {
+                font-size: .95rem;
+            }
+
+            .panel-card-copy {
+                font-size: .8rem;
+            }
+
+            .panel-table-wrap {
+                margin: 0 -.5rem;
+                padding: 0 .5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .panel-table {
+                min-width: 560px;
+            }
+
+            .panel-table thead th {
+                font-size: .7rem;
+                padding: 0 .65rem .2rem;
+            }
+
+            .panel-table tbody td {
+                padding: .75rem .65rem;
+                font-size: .82rem;
+            }
+
+            .panel-actions .btn {
+                font-size: .72rem;
+                padding: .3rem .55rem;
+            }
+        }
+
+        /* ===== Category Panel Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .panel-hero {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .panel-title {
+                font-size: 1.1rem;
+            }
+
+            .panel-card {
+                padding: .7rem;
+                border-radius: 14px;
+            }
+        }
     </style>
 @endsection
 

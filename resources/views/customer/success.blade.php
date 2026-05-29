@@ -5,7 +5,7 @@
         <div class="container text-center">
             <span class="tenant-pill"><i class="fa fa-receipt"></i> Receipt Tenant</span>
             <h1 class="display-5 fw-bold mt-3 mb-3">Pesanan tercatat untuk {{ $currentTenant?->name }}.</h1>
-            <p class="text-white-50 fs-5 mb-0">
+            <p class="tenant-hero-copy fs-5 mb-0 mx-auto">
                 @if ($order->payment_method === 'cash')
                     Tunjukkan kode ini ke kasir tenant untuk menyelesaikan pembayaran tunai.
                 @elseif ($order->status === 'settlement')

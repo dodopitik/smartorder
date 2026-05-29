@@ -322,6 +322,149 @@
             }
         }
 
+        /* ===== Orders Responsive: Tablet ===== */
+        @media (max-width: 991.98px) {
+            .orders-hero {
+                padding: 1.25rem;
+                border-radius: 22px;
+            }
+
+            .orders-kpi-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: .85rem;
+            }
+
+            .orders-kpi {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+
+            .orders-kpi-value {
+                font-size: 1.4rem;
+            }
+
+            .orders-card {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+        }
+
+        /* ===== Orders Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .orders-shell {
+                gap: .9rem;
+            }
+
+            .orders-hero {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .orders-title {
+                font-size: 1.3rem;
+            }
+
+            .orders-copy {
+                font-size: .82rem;
+            }
+
+            .orders-eyebrow {
+                font-size: .68rem;
+                padding: .35rem .65rem;
+            }
+
+            .orders-kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .65rem;
+            }
+
+            .orders-kpi {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .orders-kpi-label {
+                font-size: .78rem;
+            }
+
+            .orders-kpi-value {
+                font-size: 1.15rem;
+            }
+
+            .orders-kpi-note {
+                font-size: .72rem;
+                display: none;
+            }
+
+            .orders-card {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .orders-card-head {
+                flex-direction: column;
+                gap: .5rem;
+            }
+
+            .orders-card-title {
+                font-size: .95rem;
+            }
+
+            .orders-card-copy {
+                font-size: .8rem;
+            }
+
+            .orders-table-wrap {
+                margin: 0 -.5rem;
+                padding: 0 .5rem;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .orders-table {
+                min-width: 720px;
+            }
+
+            .orders-table thead th {
+                font-size: .7rem;
+                padding: 0 .65rem .2rem;
+            }
+
+            .orders-table tbody td {
+                padding: .75rem .65rem;
+                font-size: .82rem;
+            }
+
+            .orders-actions .btn {
+                font-size: .72rem;
+                padding: .3rem .55rem;
+            }
+        }
+
+        /* ===== Orders Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .orders-kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .orders-hero {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+
+            .orders-title {
+                font-size: 1.1rem;
+            }
+
+            .orders-kpi-value {
+                font-size: 1.05rem;
+            }
+
+            .orders-card {
+                padding: .7rem;
+                border-radius: 14px;
+            }
+        }
+
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(100%); }
             to { opacity: 1; transform: translateX(0); }

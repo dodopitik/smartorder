@@ -115,6 +115,133 @@
             color: #fdba74 !important;
             border: 1px solid rgba(251, 146, 60, 0.2);
         }
+
+        /* ===== Tenant Panel Responsive: Tablet ===== */
+        @media (max-width: 991.98px) {
+            .tenant-panel-hero {
+                padding: 1.35rem;
+                border-radius: 22px;
+            }
+
+            .tenant-panel-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: .85rem;
+            }
+
+            .tenant-panel-stat {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .tenant-panel-stat .value {
+                font-size: 1.5rem;
+            }
+
+            .tenant-panel-links {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: .85rem;
+            }
+
+            .tenant-link-card {
+                padding: 1.1rem;
+                border-radius: 20px;
+            }
+        }
+
+        /* ===== Tenant Panel Responsive: Mobile ===== */
+        @media (max-width: 767.98px) {
+            .tenant-panel-hero {
+                padding: 1.1rem;
+                border-radius: 18px;
+            }
+
+            .tenant-panel-hero h2 {
+                font-size: 1.2rem;
+            }
+
+            .tenant-panel-hero p {
+                font-size: .85rem;
+            }
+
+            .tenant-panel-hero .btn {
+                width: 100%;
+                margin-top: .75rem;
+            }
+
+            .tenant-panel-hero .d-flex {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .tenant-panel-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: .65rem;
+            }
+
+            .tenant-panel-stat {
+                padding: .85rem;
+                border-radius: 16px;
+            }
+
+            .tenant-panel-stat .label {
+                font-size: .78rem;
+            }
+
+            .tenant-panel-stat .value {
+                font-size: 1.25rem;
+            }
+
+            .tenant-panel-links {
+                grid-template-columns: 1fr;
+                gap: .75rem;
+            }
+
+            .tenant-link-card {
+                padding: 1rem;
+                border-radius: 18px;
+            }
+
+            .tenant-link-card .icon {
+                width: 44px;
+                height: 44px;
+                border-radius: 14px;
+                font-size: 1rem;
+                margin-bottom: .75rem;
+            }
+
+            .tenant-link-card h5 {
+                font-size: .95rem;
+            }
+
+            .tenant-link-card p {
+                font-size: .82rem;
+            }
+        }
+
+        /* ===== Tenant Panel Responsive: Small Mobile ===== */
+        @media (max-width: 479.98px) {
+            .tenant-panel-hero {
+                padding: .9rem;
+                border-radius: 14px;
+            }
+
+            .tenant-panel-hero h2 {
+                font-size: 1.05rem;
+            }
+
+            .tenant-panel-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tenant-panel-stat .value {
+                font-size: 1.1rem;
+            }
+
+            .tenant-link-card {
+                padding: .85rem;
+                border-radius: 14px;
+            }
+        }
     </style>
 @endsection
 

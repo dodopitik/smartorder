@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
@@ -16,7 +17,7 @@ class OrderController extends Controller
 
         $orders = Order::query()
             ->where('tenant_id', $tenantId)
-            ->with('user')
+            ->with('user:id,fullname,phone,email')
             ->orderByDesc('created_at')
             ->limit(200)
             ->get();
@@ -24,7 +25,7 @@ class OrderController extends Controller
         $lastOrder = Order::query()
             ->where('tenant_id', $tenantId)
             ->latest('id')
-            ->first();
+            ->first(['id', 'status']);
 
         // AJAX request: return partial HTML tabel saja
         if ($request->ajax() || $request->expectsJson()) {
@@ -50,14 +51,6 @@ class OrderController extends Controller
         ]);
     }
 
-    public function create()
-    {
-    }
-
-    public function store(Request $request)
-    {
-    }
-
     public function show(string $tenant, string $orderId)
     {
         $orders = Order::query()
@@ -66,20 +59,11 @@ class OrderController extends Controller
 
         $orders = $this->syncMidtransOrderStatus($orders);
 
-        $orderItems = OrderItem::where('order_id', $orders->id)->get();
+        $orderItems = OrderItem::with('item')
+            ->where('order_id', $orders->id)
+            ->get();
+
         return view('admin.order.show', compact('orders', 'orderItems'));
-    }
-
-    public function edit(string $tenant, string $orderId)
-    {
-    }
-
-    public function update(Request $request, string $tenant, string $orderId)
-    {
-    }
-
-    public function destroy(string $tenant, string $orderId)
-    {
     }
 
     public function settlement(Request $request, string $tenant, string $orderId)
@@ -91,6 +75,7 @@ class OrderController extends Controller
 
         $order->status = 'settlement';
         $order->save();
+        $this->forgetDashboardCache($tenantModel->id);
 
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Order telah diselesaikan.']);
@@ -108,6 +93,7 @@ class OrderController extends Controller
 
         $order->status = 'cooked';
         $order->save();
+        $this->forgetDashboardCache($tenantModel->id);
 
         if ($request->ajax() || $request->expectsJson()) {
             return response()->json(['success' => true, 'message' => 'Order telah diselesaikan.']);
@@ -144,7 +130,7 @@ class OrderController extends Controller
         $latestOrder = Order::query()
             ->where('tenant_id', $tenant->id)
             ->latest('id')
-            ->first();
+            ->first(['id', 'status']);
 
         $latestId = $latestOrder?->id ?? 0;
         $latestStatus = $latestOrder?->status ?? '';
@@ -159,6 +145,12 @@ class OrderController extends Controller
 
     private function syncPendingDigitalOrders(int $tenantId): void
     {
+        $cacheKey = 'tenant.' . $tenantId . '.orders.midtrans-sync.recent';
+
+        if (! Cache::add($cacheKey, true, now()->addSeconds(30))) {
+            return;
+        }
+
         Order::query()
             ->where('tenant_id', $tenantId)
             ->where('payment_method', 'qris')
@@ -193,6 +185,7 @@ class OrderController extends Controller
             ) {
                 $order->status = 'settlement';
                 $order->save();
+                $this->forgetDashboardCache((int) $order->tenant_id);
             }
         } catch (\Throwable $throwable) {
             Log::info('Midtrans status sync skipped on order admin panel.', [
@@ -202,5 +195,10 @@ class OrderController extends Controller
         }
 
         return $order->fresh() ?? $order;
+    }
+
+    private function forgetDashboardCache(int $tenantId): void
+    {
+        Cache::forget('tenant.' . $tenantId . '.dashboard.stats');
     }
 }

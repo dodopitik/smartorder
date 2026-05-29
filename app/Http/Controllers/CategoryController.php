@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
@@ -50,12 +51,9 @@ class CategoryController extends Controller
         $validatedData['description'] = $validatedData['description'] ?? $validatedData['category_name'];
 
         Category::create($validatedData);
+        $this->forgetTenantMenuCache($tenant->id);
 
         return redirect()->route('categories.index', ['tenant' => $tenant->slug])->with('success', 'Kategori berhasil ditambahkan.');
-    }
-
-    public function show(string $tenant, string $id)
-    {
     }
 
     public function edit(string $tenant, string $id)
@@ -90,6 +88,7 @@ class CategoryController extends Controller
 
         $validatedData['description'] = $validatedData['description'] ?? $categories->description ?? $validatedData['category_name'];
         $categories->update($validatedData);
+        $this->forgetTenantMenuCache($tenantModel->id);
 
         return redirect()->route('categories.index', ['tenant' => $tenantModel->slug])->with('success', 'Kategori berhasil diperbarui.');
     }
@@ -102,14 +101,23 @@ class CategoryController extends Controller
             ->findOrFail($id);
 
         // Cek apakah kategori masih dipakai oleh item
-        $itemCount = \App\Models\Item::where('category_id', $categories->id)->count();
+        $itemCount = \App\Models\Item::query()
+            ->where('tenant_id', $tenantModel->id)
+            ->where('category_id', $categories->id)
+            ->count();
         if ($itemCount > 0) {
             return redirect()->route('categories.index', ['tenant' => $tenantModel->slug])
                 ->with('error', 'Kategori ini masih digunakan oleh ' . $itemCount . ' menu. Pindahkan menu terlebih dahulu.');
         }
 
         $categories->delete();
+        $this->forgetTenantMenuCache($tenantModel->id);
 
         return redirect()->route('categories.index', ['tenant' => $tenantModel->slug])->with('success', 'Kategori berhasil dihapus.');
+    }
+
+    private function forgetTenantMenuCache(int $tenantId): void
+    {
+        Cache::forget('tenant.' . $tenantId . '.menu.items.available');
     }
 }

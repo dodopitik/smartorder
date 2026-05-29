@@ -80,13 +80,13 @@ Route::prefix('hotel/{tenant:slug}/admin')
         Route::get('reports/print', [ReportController::class, 'print'])->name('reports.print');
 
         Route::middleware('role:admin|cashier')->group(function () {
-            Route::resource('categories', CategoryController::class);
-            Route::resource('items', ItemController::class);
+            Route::resource('categories', CategoryController::class)->except(['show']);
+            Route::resource('items', ItemController::class)->except(['show']);
         });
 
         Route::middleware('role:admin')->group(function () {
-            Route::resource('users', UserController::class);
-            Route::resource('roles', RoleController::class);
+            Route::resource('users', UserController::class)->except(['show']);
+            Route::resource('roles', RoleController::class)->except(['show']);
             Route::get('pay-qris', [PaymentController::class, 'qris'])->name('admin.pay.qris');
             Route::get('notifications', [NotificationSettingController::class, 'edit'])->name('notification.settings');
             Route::put('notifications', [NotificationSettingController::class, 'update'])->name('notification.settings.update');
